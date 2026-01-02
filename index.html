@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>QWRT — Magazine & Radio</title>
+<title>QWRT Radio — Live 24/7</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -100,47 +100,19 @@
   }
   .sub{margin:0;color:var(--muted);font-size:1.05rem;font-weight:500}
 
-  .feature-list{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem}
-  .feature{
-    border-radius:12px;
-    padding:1rem 1.25rem;
-    font-weight:600;
-    background:white;
-    box-shadow:0 2px 12px rgba(0,0,0,0.06);
-    border:2px solid var(--border-light);
-    transition:all 200ms ease;
-    position:relative;
-    overflow:hidden;
-  }
-  
-  .feature::before{
-    content:'';
-    position:absolute;
-    left:0;
-    top:0;
-    bottom:0;
-    width:4px;
-    background:var(--bw-foreground);
-    opacity:0;
-    transition:opacity 200ms ease;
-  }
-  
-  .feature:hover{
-    transform:translateX(4px);
-    box-shadow:0 4px 16px rgba(0,0,0,0.12);
-    border-color:var(--bw-foreground);
-  }
-  
-  .feature:hover::before{
-    opacity:1;
+  .radio-player{
+    border-radius:var(--radius);
+    padding:2rem;
+    background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    border:var(--border-w) solid var(--bw-foreground);
+    margin-top:2rem;
   }
 
-  .grid-two{
-    display:grid;
-    grid-template-columns:1fr 420px;
-    gap:2rem;
-    align-items:start;
-    margin-top:2.5rem;
+  .azuracast-embed{
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
   }
 
   .section-title{
@@ -150,63 +122,6 @@
     color:var(--bw-foreground);
   }
 
-  .radio-box{
-    border-radius:var(--radius);
-    padding:1.25rem;
-    background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    display:flex;
-    flex-direction:column;
-    gap:1rem;
-    box-shadow:0 4px 20px rgba(0,0,0,0.08);
-    border:var(--border-w) solid var(--bw-foreground);
-  }
-  
-  .radio-top{display:flex;gap:1rem;align-items:center}
-  .radio-art{
-    width:90px;
-    height:90px;
-    flex:0 0 90px;
-    border-radius:12px;
-    background:linear-gradient(135deg, #f0f0f0, #fafafa);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 2px 8px rgba(0,0,0,0.06);
-    border:1px solid var(--border-light);
-  }
-  .radio-meta{flex:1;min-width:0}
-  .radio-meta .title{font-weight:700;margin:0 0 0.35rem;font-size:1.05rem}
-  .radio-meta .artist{color:var(--muted);margin:0;font-size:0.95rem}
-  .radio-controls{display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem}
-  .progress{
-    height:10px;
-    background:#f0f0f0;
-    border-radius:8px;
-    overflow:hidden;
-    flex:1;
-    box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);
-    border:1px solid var(--border-light);
-  }
-  .progress > i{
-    display:block;
-    height:100%;
-    width:46%;
-    background:var(--bw-foreground);
-    border-radius:8px;
-  }
-
-  .mailing-box{
-    border-radius:var(--radius);
-    padding:1.25rem;
-    background:white;
-    box-shadow:0 2px 12px rgba(0,0,0,0.06);
-    display:flex;
-    flex-direction:column;
-    gap:0.75rem;
-    border:1px solid var(--border-light);
-  }
-  .mailing-box p{margin:0;color:var(--muted)}
-
   .card{
     border-radius:var(--radius);
     padding:1.5rem;
@@ -214,6 +129,7 @@
     box-shadow:0 2px 16px rgba(0,0,0,0.06);
     border:2px solid var(--border-light);
     transition:border-color 200ms ease;
+    margin-top:1.5rem;
   }
   
   .card:hover{
@@ -222,7 +138,6 @@
   
   .card p{margin:0.5rem 0}
 
-  .submit-cta{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
   .btn{
     display:inline-block;
     padding:0.7rem 1.25rem;
@@ -275,8 +190,6 @@
   
   footer a:hover{opacity:0.6}
 
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
   section{margin-top:2.5rem}
   
   section p a{
@@ -291,64 +204,87 @@
     opacity:0.7;
   }
 
+  .stream-info{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:1rem;
+    margin-top:1.5rem;
+  }
+
+  .info-card{
+    border-radius:12px;
+    padding:1rem 1.25rem;
+    background:white;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
+    border:2px solid var(--border-light);
+    transition:all 200ms ease;
+  }
+
+  .info-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 16px rgba(0,0,0,0.12);
+    border-color:var(--bw-foreground);
+  }
+
+  .info-card h4{
+    margin:0 0 0.5rem;
+    font-weight:700;
+    font-size:1rem;
+  }
+
+  .info-card p{
+    margin:0;
+    color:var(--muted);
+    font-size:0.95rem;
+  }
+
   @media (max-width:980px){
-    .grid-two{grid-template-columns:1fr}
     .logo h1{font-size:1.8rem}
     .lead{font-size:1.8rem}
     .wrap{padding:1rem;margin:1rem auto}
-    .feature-list{grid-template-columns:1fr}
+    .stream-info{grid-template-columns:1fr}
   }
 
 </style>
 </head>
 <body>
   <div class="wrap">
+    <header class="site-header">
+      <div class="logo">
+        <h1>QWRT Radio</h1>
+        <span class="tag">Broadcasting 24/7</span>
+      </div>
+      <nav class="primary">
+        <a class="nav-link" href="https://qwrt.online" rel="noopener">Magazine</a>
+        <a class="nav-link" href="mailto:hello@qwrt.online">Contact</a>
+      </nav>
+    </header>
 
-    <main id="home" class="hero" role="main">
-      <article class="cover" aria-labelledby="cover-head">
+    <main class="hero" role="main">
+      <article class="cover">
         <div>
-          <h2 id="cover-head" class="lead">Welcome to QWRT</h2>
-          <p class="sub">A monthly music magazine + 24/7 radio.</p>
+          <h2 class="lead">Live Radio Stream</h2>
+          <p class="sub">Independent music, curated playlists, and live shows.</p>
         </div>
-
-         <p>QWRT Magazine looks for music industry coverage, album reviews, and indie stories. We run monthly issues online and have physical print runs in select locations to be determined.
-         <br>
-                  <br>
-
-
-           <a class="btn" href="https://radio.qwrt.online" target="_blank" rel="noopener">Tune into our 24/7 radio station</a>
-</p>
+        <p>Tune into QWRT Radio for the best in independent and alternative music. Broadcasting 24/7 with carefully curated playlists and special live shows.</p>
       </article>
-    </main>
 
-    <section class="grid-two" id="magazine" aria-label="Magazine and radio">
-      <div>
-       
-
-        <div style="margin-top:1.5rem">
-          <h4 style="margin:0 0 0.75rem;font-weight:800;font-size:1.25rem">Mailing list for updates and issues</h4>
-
-          <div class="mailing-box" role="form" aria-label="Mailing list signup">
-            <div data-supascribe-embed-id="280461926589" data-supascribe-subscribe aria-label="Supascribe subscribe"></div>
-            <script src="https://js.supascribe.com/v1/loader/buMiRanraPW6BlmskH1SDTIXjZf1.js" async></script>
-          </div>
-
-          <small style="opacity:0.75;margin-top:0.75rem;display:block;color:var(--muted)">If the widget doesn't load, please try again or contact hello@qwrt.online</small>
+      <div class="radio-player">
+        <h3 class="section-title">Now Playing</h3>
+        <div class="azuracast-embed">
+          <iframe src="https://stream.qwrt.online/public/qwrt/embed" frameborder="0" allowtransparency="true" style="width: 100%; min-height: 150px; border: 0;"></iframe>
         </div>
       </div>
+    </main>
 
-      
-    </section>
-
-    <section id="submit">
-      <h3 class="section-title">How can I contribute?</h3>
+    <section>
+      <h3 class="section-title">About QWRT</h3>
       <div class="card">
-        <p>We accept submissions for features, reviews, and interviews.</p>
-        <div class="submit-cta">
-          <a class="btn" href="https://tiny.cc/qwrtsubmissons" target="_blank" rel="noopener">Submit your work</a>
-          <a class="btn outline" href="mailto:hello@qwrt.online">Or contact us at hello@qwrt.online</a>
+        <p>QWRT is more than just a radio station. We're a community-driven music magazine and broadcasting platform dedicated to showcasing independent artists and alternative sounds.</p>
+        <div style="margin-top:1.5rem">
+          <a class="btn" href="https://qwrt.online" rel="noopener">Read the Magazine</a>
+          <a class="btn outline" href="https://tiny.cc/qwrtsubmissons" target="_blank" rel="noopener" style="margin-left:0.75rem">Submit Music</a>
         </div>
-        <small style="opacity:0.75;display:block;margin-top:1rem;color:var(--muted)">By submitting you agree we may contact the email provided.</small>
       </div>
     </section>
 
