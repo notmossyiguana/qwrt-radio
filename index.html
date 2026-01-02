@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>QWRT Radio — Live 24/7</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-
 <style>
   :root{
     --bw-foreground:#0b0b0b;
@@ -17,7 +16,6 @@
     --radius:16px;
     --border-w:2px;
   }
-
   *,*::before,*::after{box-sizing:border-box}
   html,body{height:100%}
   body{
@@ -29,13 +27,11 @@
     -moz-osx-font-smoothing:grayscale;
     line-height:1.6;
   }
-
   .wrap{
     max-width:var(--container);
     margin:2rem auto;
     padding:1.5rem;
   }
-
   header.site-header{
     display:flex;
     align-items:center;
@@ -45,7 +41,6 @@
     margin-bottom:2rem;
     border-bottom:3px solid var(--bw-foreground);
   }
-  
   .logo{display:flex;flex-direction:column;gap:0.25rem}
   .logo h1{
     font-weight:800;
@@ -56,7 +51,6 @@
     color:var(--bw-foreground);
   }
   .logo .tag{color:var(--muted);font-size:0.9rem;font-weight:500}
-
   nav.primary{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
   .nav-link{
     display:inline-block;
@@ -78,7 +72,6 @@
     background:var(--bw-foreground);
     color:var(--bw-background);
   }
-
   main.hero{margin-top:0}
   .cover{
     border-radius:var(--radius);
@@ -91,7 +84,6 @@
     box-shadow:0 4px 20px rgba(0,0,0,0.08);
     border:var(--border-w) solid var(--bw-foreground);
   }
-  
   .lead{
     font-weight:800;
     font-size:2.2rem;
@@ -99,7 +91,6 @@
     color:var(--bw-foreground);
   }
   .sub{margin:0;color:var(--muted);font-size:1.05rem;font-weight:500}
-
   .radio-player{
     border-radius:var(--radius);
     padding:2rem;
@@ -108,13 +99,11 @@
     border:var(--border-w) solid var(--bw-foreground);
     margin-top:2rem;
   }
-
   .azuracast-embed{
     border-radius:12px;
     overflow:hidden;
     box-shadow:0 2px 12px rgba(0,0,0,0.06);
   }
-
   #volume::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -125,7 +114,6 @@
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-
   #volume::-moz-range-thumb {
     width: 18px;
     height: 18px;
@@ -135,23 +123,19 @@
     border: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-
   #play-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
   }
-
   #play-btn:active {
     transform: scale(0.98);
   }
-
   .section-title{
     margin:0 0 1rem;
     font-weight:800;
     font-size:1.75rem;
     color:var(--bw-foreground);
   }
-
   .card{
     border-radius:var(--radius);
     padding:1.5rem;
@@ -161,13 +145,8 @@
     transition:border-color 200ms ease;
     margin-top:1.5rem;
   }
-  
-  .card:hover{
-    border-color:var(--bw-foreground);
-  }
-  
+  .card:hover{ border-color:var(--bw-foreground); }
   .card p{margin:0.5rem 0}
-
   .btn{
     display:inline-block;
     padding:0.7rem 1.25rem;
@@ -178,30 +157,25 @@
     transition:all 200ms ease;
     cursor:pointer;
   }
-  
   .btn:not(.outline){
     background:var(--bw-foreground);
     color:var(--bw-background);
     box-shadow:0 4px 12px rgba(0,0,0,0.15);
     border:2px solid var(--bw-foreground);
   }
-  
   .btn:not(.outline):hover{
     transform:translateY(-2px);
     box-shadow:0 6px 20px rgba(0,0,0,0.25);
   }
-  
   .btn.outline{
     background:transparent;
     color:var(--bw-foreground);
     border:2px solid var(--bw-foreground);
   }
-  
   .btn.outline:hover{
     background:var(--bw-foreground);
     color:var(--bw-background);
   }
-
   footer.site-footer{
     margin-top:3rem;
     padding-top:1.5rem;
@@ -210,18 +184,9 @@
     font-size:0.95rem;
     border-top:3px solid var(--bw-foreground);
   }
-  
-  footer a{
-    color:var(--bw-foreground);
-    text-decoration:none;
-    font-weight:600;
-    transition:opacity 200ms ease;
-  }
-  
+  footer a{ color:var(--bw-foreground); text-decoration:none; font-weight:600; transition:opacity 200ms ease; }
   footer a:hover{opacity:0.6}
-
   section{margin-top:2.5rem}
-  
   section p a{
     color:var(--bw-foreground);
     font-weight:600;
@@ -229,18 +194,13 @@
     border-bottom:2px solid var(--bw-foreground);
     transition:all 200ms ease;
   }
-  
-  section p a:hover{
-    opacity:0.7;
-  }
-
+  section p a:hover{ opacity:0.7; }
   .stream-info{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
     gap:1rem;
     margin-top:1.5rem;
   }
-
   .info-card{
     border-radius:12px;
     padding:1rem 1.25rem;
@@ -249,32 +209,19 @@
     border:2px solid var(--border-light);
     transition:all 200ms ease;
   }
-
   .info-card:hover{
     transform:translateY(-2px);
     box-shadow:0 4px 16px rgba(0,0,0,0.12);
     border-color:var(--bw-foreground);
   }
-
-  .info-card h4{
-    margin:0 0 0.5rem;
-    font-weight:700;
-    font-size:1rem;
-  }
-
-  .info-card p{
-    margin:0;
-    color:var(--muted);
-    font-size:0.95rem;
-  }
-
+  .info-card h4{ margin:0 0 0.5rem; font-weight:700; font-size:1rem; }
+  .info-card p{ margin:0; color:var(--muted); font-size:0.95rem; }
   @media (max-width:980px){
     .logo h1{font-size:1.8rem}
     .lead{font-size:1.8rem}
     .wrap{padding:1rem;margin:1rem auto}
     .stream-info{grid-template-columns:1fr}
   }
-
 </style>
 </head>
 <body>
@@ -314,7 +261,7 @@
         </div>
         
         <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-          <button id="play-btn" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
+          <button id="play-btn" aria-pressed="false" aria-label="Play" title="Play (Space)" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
             ▶
           </button>
           <div style="flex:1">
@@ -323,11 +270,12 @@
           <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
         </div>
         
-        <audio id="radio-stream" preload="none">
+        <audio id="radio-stream" preload="none" crossorigin="anonymous">
           <source src="https://stream.qwrt.online/listen/qwrt/radio.mp3" type="audio/mpeg">
+          Your browser does not support the audio element.
         </audio>
         
-        <!-- Hidden iframe for metadata extraction -->
+        <!-- NOTE: We keep the iframe if you still want to embed AzuraCast visuals; however metadata extraction from iframes is fragile (CORS/same-origin). -->
         <iframe id="metadata-iframe" src="https://stream.qwrt.online/public/qwrt/embed" style="display:none;"></iframe>
       </div>
     </main>
@@ -348,5 +296,210 @@
     </footer>
   </div>
 
+<script>
+(function () {
+  const audio = document.getElementById('radio-stream');
+  const playBtn = document.getElementById('play-btn');
+  const volume = document.getElementById('volume');
+  const volumeDisplay = document.getElementById('volume-display');
+  const songTitle = document.getElementById('song-title');
+  const artistName = document.getElementById('artist-name');
+
+  // set initial volume
+  audio.volume = parseInt(volume.value, 10) / 100;
+
+  function setPlayingUI(isPlaying) {
+    playBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+    playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    playBtn.textContent = isPlaying ? '❚❚' : '▶';
+  }
+
+  // Play / Pause toggle (user gesture)
+  async function togglePlay() {
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setPlayingUI(true);
+      } catch (err) {
+        console.warn('Playback failed (autoplay policy, or stream unreachable):', err);
+        // show a friendly message
+        artistName.textContent = 'Unable to start playback — tap play again or check the stream.';
+      }
+    } else {
+      audio.pause();
+      setPlayingUI(false);
+    }
+  }
+
+  playBtn.addEventListener('click', togglePlay);
+
+  // Sync UI with audio events (in case playback state changes)
+  audio.addEventListener('play', () => setPlayingUI(true));
+  audio.addEventListener('pause', () => setPlayingUI(false));
+  audio.addEventListener('error', (ev) => {
+    console.error('Audio element error', ev);
+    artistName.textContent = 'Stream error — offline or unreachable.';
+    setPlayingUI(false);
+  });
+
+  // Volume control
+  volume.addEventListener('input', () => {
+    const pct = parseInt(volume.value, 10);
+    audio.volume = pct / 100;
+    volumeDisplay.textContent = pct + '%';
+  });
+
+  // Keyboard support: Space toggles play/pause when focused on body (but avoid interfering with form fields)
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  // --- Metadata fetching ---
+  // Best-effort: try common endpoints on the audio's origin to get now-playing metadata.
+  // NOTE: many radio hosts do not allow cross-origin requests. If metadata remains unavailable,
+  // configure the streaming host to expose a CORS-enabled now-playing JSON endpoint (AzuraCast provides one).
+  async function fetchNowPlaying() {
+    // Build candidate endpoints relative to the stream origin
+    const streamSrc = audio.querySelector('source')?.src || audio.src;
+    if (!streamSrc) return;
+    let base;
+    try {
+      base = new URL(streamSrc).origin;
+    } catch (err) {
+      console.warn('Invalid stream URL for metadata base:', err);
+      return;
+    }
+
+    const candidates = [
+      // AzuraCast nowplaying common endpoints
+      `${base}/api/nowplaying`,
+      `${base}/api/nowplaying?mount=/listen/qwrt`,
+      // Icecast generic endpoint
+      `${base}/status-json.xsl`,
+      // Shoutcast legacy endpoints /7.html sometimes available
+      `${base}/7.html`,
+      // As a last resort, the public/embed page (could be html; we might parse some text)
+      `${base}/public/qwrt/embed`
+    ];
+
+    for (const url of candidates) {
+      try {
+        const res = await fetch(url, {mode: 'cors', cache: 'no-store'});
+        if (!res.ok) { continue; }
+
+        // try JSON
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          // common shapes: AzuraCast: data.now_playing.song.title or data.now_playing.playing -> adapt
+          const np = data.now_playing || data;
+          const title = (np.song && (np.song.title || np.song.name)) || np.source || np.title || null;
+          const artist = (np.song && np.song.artist) || np.artist || np.mount || null;
+
+          if (title) {
+            songTitle.textContent = title;
+            artistName.textContent = artist ? artist : 'QWRT Radio';
+            return;
+          }
+          // some Icecast stats show 'icestats': { source: [...] }
+          if (data.icestats && data.icestats.source) {
+            const source = Array.isArray(data.icestats.source) ? data.icestats.source[0] : data.icestats.source;
+            const sTitle = source.title || source.name;
+            if (sTitle) {
+              songTitle.textContent = sTitle;
+              artistName.textContent = source.artist || 'QWRT Radio';
+              return;
+            }
+          }
+        } else {
+          // not JSON: try plain text or html parsing
+          const text = await res.text();
+          // shoutcast /7.html returns CSV-ish content where 0th is current song
+          const trimmed = text.trim();
+          // quick heuristics:
+          if (trimmed.includes(',')) {
+            const parts = trimmed.split(',');
+            if (parts[0] && parts[0].length < 200) {
+              songTitle.textContent = decodeURIComponent(parts[0]) || parts[0];
+              artistName.textContent = 'QWRT Radio';
+              return;
+            }
+          }
+          // try to extract a title tag from HTML
+          const m = trimmed.match(/<title[^>]*>([^<]+)<\/title>/i);
+          if (m) {
+            songTitle.textContent = m[1].trim();
+            artistName.textContent = 'QWRT Radio';
+            return;
+          }
+        }
+      } catch (err) {
+        // CORS or network error — try next candidate
+        // console.debug('NowPlaying attempt failed for', url, err);
+        continue;
+      }
+    }
+
+    // If nothing worked, leave current text but update console for debugging.
+    console.warn('Could not fetch now-playing metadata from stream origin (CORS or endpoint mismatch). Provide a CORS-enabled now-playing JSON endpoint for consistent metadata.');
+  }
+
+  // initial fetch and periodic updates
+  fetchNowPlaying();
+  setInterval(fetchNowPlaying, 15000); // every 15s
+
+  // Optional: if the embed iframe supports postMessage it could provide metadata — this is host-dependent.
+  // We still listen for postMessages as a fallback.
+  window.addEventListener('message', (ev) => {
+    try {
+      const d = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+      if (d && d.now_playing) {
+        const t = d.now_playing.song && (d.now_playing.song.title || d.now_playing.song.name);
+        const a = d.now_playing.song && d.now_playing.song.artist;
+        if (t) {
+          songTitle.textContent = t;
+          artistName.textContent = a || 'QWRT Radio';
+        }
+      }
+    } catch (err) {
+      // ignore non-json messages
+    }
+  });
+
+  // Small accessibility improvement: announce updates to screen readers (simple approach).
+  function announce(text) {
+    // create an offscreen live region once
+    let region = document.getElementById('a11y-live');
+    if (!region) {
+      region = document.createElement('div');
+      region.id = 'a11y-live';
+      region.setAttribute('aria-live', 'polite');
+      region.style.position = 'absolute';
+      region.style.left = '-9999px';
+      region.style.top = 'auto';
+      document.body.appendChild(region);
+    }
+    region.textContent = text;
+  }
+
+  // announce when metadata changes
+  let lastNowPlaying = '';
+  setInterval(() => {
+    const now = songTitle.textContent + ' — ' + artistName.textContent;
+    if (now !== lastNowPlaying && now.trim().length > 0) {
+      announce('Now playing: ' + now);
+      lastNowPlaying = now;
+    }
+  }, 2000);
+
+  // If you'd like more reliable metadata:
+  // - Configure AzuraCast to expose /api/nowplaying with CORS and replace the candidate URL above with the station-specific endpoint.
+  // - Or host this player under the same origin as the stream host to avoid cross-origin restrictions.
+
+})();
+</script>
 </body>
 </html>
