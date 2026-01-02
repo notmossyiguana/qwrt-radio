@@ -379,23 +379,39 @@
 
     // Fetch now playing info from AzuraCast API
     async function updateNowPlaying() {
-      try {
-        const response = await fetch('https://stream.qwrt.online/api/nowplaying/qwrt');
-        const data = await response.json();
-        
-        if (data && data.now_playing) {
-          const np = data.now_playing;
-          songTitle.textContent = np.song.title || 'Unknown Track';
-          artistName.textContent = np.song.artist || 'Unknown Artist';
+      // Try multiple possible API endpoints
+      const endpoints = [
+        'https://stream.qwrt.online/api/nowplaying_static/qwrt.json',
+        'https://stream.qwrt.online/api/nowplaying/qwrt',
+        'https://stream.qwrt.online/api/nowplaying',
+        'https://stream.qwrt.online/api/nowplaying_static/1.json'
+      ];
+      
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint);
+          if (!response.ok) continue;
           
-          if (np.song.art) {
-            albumArt.innerHTML = `<img src="${np.song.art}" alt="Album art" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+          const data = await response.json();
+          
+          if (data && data.now_playing) {
+            const np = data.now_playing;
+            songTitle.textContent = np.song.title || 'Unknown Track';
+            artistName.textContent = np.song.artist || 'Unknown Artist';
+            
+            if (np.song.art) {
+              albumArt.innerHTML = `<img src="${np.song.art}" alt="Album art" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+            }
+            return; // Success, exit function
           }
+        } catch (error) {
+          continue; // Try next endpoint
         }
-      } catch (error) {
-        songTitle.textContent = 'Offline';
-        artistName.textContent = 'Stream unavailable';
       }
+      
+      // If all endpoints fail
+      songTitle.textContent = 'Live Stream';
+      artistName.textContent = 'Now Playing';
     }
 
     // Update now playing every 10 seconds
