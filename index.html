@@ -301,9 +301,34 @@
 
       <div class="radio-player">
         <h3 class="section-title">Now Playing</h3>
-        <div style="border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-          <iframe src="https://stream.qwrt.online/public/qwrt/embed?theme=dark" frameborder="0" allowtransparency="true" style="width: 100%; min-height: 200px; border: 0; border-radius: 12px;"></iframe>
+        <div id="now-playing-info" style="margin-bottom:1.5rem">
+          <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
+            <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
+              <span style="font-size:3rem;opacity:0.3">♪</span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground)">Loading...</div>
+              <div id="artist-name" style="color:var(--muted);font-size:1rem">Connecting to stream...</div>
+            </div>
+          </div>
         </div>
+        
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+          <button id="play-btn" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
+            ▶
+          </button>
+          <div style="flex:1">
+            <input type="range" id="volume" min="0" max="100" value="70" style="width:100%;height:8px;border-radius:8px;background:#f0f0f0;outline:none;-webkit-appearance:none;appearance:none">
+          </div>
+          <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
+        </div>
+        
+        <audio id="radio-stream" preload="none">
+          <source src="https://stream.qwrt.online/listen/qwrt/radio.mp3" type="audio/mpeg">
+        </audio>
+        
+        <!-- Hidden iframe for metadata extraction -->
+        <iframe id="metadata-iframe" src="https://stream.qwrt.online/public/qwrt/embed" style="display:none;"></iframe>
       </div>
     </main>
 
