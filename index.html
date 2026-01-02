@@ -1,1 +1,361 @@
-placeholder
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QWRT — Magazine & Radio</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bw-foreground:#0b0b0b;
+    --bw-background:#ffffff;
+    --muted:#6b6b6b;
+    --border-light:#e6e6e6;
+    --container:1100px;
+    --gap:1.5rem;
+    --radius:16px;
+    --border-w:2px;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color:var(--bw-foreground);
+    background:linear-gradient(180deg,#fafafa,#ffffff);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.6;
+  }
+
+  .wrap{
+    max-width:var(--container);
+    margin:2rem auto;
+    padding:1.5rem;
+  }
+
+  header.site-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1.5rem;
+    padding-bottom:1.5rem;
+    margin-bottom:2rem;
+    border-bottom:3px solid var(--bw-foreground);
+  }
+  
+  .logo{display:flex;flex-direction:column;gap:0.25rem}
+  .logo h1{
+    font-weight:800;
+    font-size:2.2rem;
+    margin:0;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--bw-foreground);
+  }
+  .logo .tag{color:var(--muted);font-size:0.9rem;font-weight:500}
+
+  nav.primary{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
+  .nav-link{
+    display:inline-block;
+    padding:0.65rem 1.1rem;
+    border-radius:var(--radius);
+    border:var(--border-w) solid var(--bw-foreground);
+    background:var(--bw-background);
+    text-decoration:none;
+    color:var(--bw-foreground);
+    font-weight:700;
+    font-size:0.95rem;
+    transition:all 200ms ease;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  }
+  .nav-link:focus{outline:3px solid rgba(11,11,11,0.2);outline-offset:2px}
+  .nav-link:hover{ 
+    transform:translateY(-3px); 
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+    background:var(--bw-foreground);
+    color:var(--bw-background);
+  }
+
+  main.hero{margin-top:0}
+  .cover{
+    border-radius:var(--radius);
+    padding:2rem;
+    min-height:240px;
+    display:flex;
+    flex-direction:column;
+    gap:1.25rem;
+    background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    border:var(--border-w) solid var(--bw-foreground);
+  }
+  
+  .lead{
+    font-weight:800;
+    font-size:2.2rem;
+    margin:0;
+    color:var(--bw-foreground);
+  }
+  .sub{margin:0;color:var(--muted);font-size:1.05rem;font-weight:500}
+
+  .feature-list{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem}
+  .feature{
+    border-radius:12px;
+    padding:1rem 1.25rem;
+    font-weight:600;
+    background:white;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
+    border:2px solid var(--border-light);
+    transition:all 200ms ease;
+    position:relative;
+    overflow:hidden;
+  }
+  
+  .feature::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:4px;
+    background:var(--bw-foreground);
+    opacity:0;
+    transition:opacity 200ms ease;
+  }
+  
+  .feature:hover{
+    transform:translateX(4px);
+    box-shadow:0 4px 16px rgba(0,0,0,0.12);
+    border-color:var(--bw-foreground);
+  }
+  
+  .feature:hover::before{
+    opacity:1;
+  }
+
+  .grid-two{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:2rem;
+    align-items:start;
+    margin-top:2.5rem;
+  }
+
+  .section-title{
+    margin:0 0 1rem;
+    font-weight:800;
+    font-size:1.75rem;
+    color:var(--bw-foreground);
+  }
+
+  .radio-box{
+    border-radius:var(--radius);
+    padding:1.25rem;
+    background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    border:var(--border-w) solid var(--bw-foreground);
+  }
+  
+  .radio-top{display:flex;gap:1rem;align-items:center}
+  .radio-art{
+    width:90px;
+    height:90px;
+    flex:0 0 90px;
+    border-radius:12px;
+    background:linear-gradient(135deg, #f0f0f0, #fafafa);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    border:1px solid var(--border-light);
+  }
+  .radio-meta{flex:1;min-width:0}
+  .radio-meta .title{font-weight:700;margin:0 0 0.35rem;font-size:1.05rem}
+  .radio-meta .artist{color:var(--muted);margin:0;font-size:0.95rem}
+  .radio-controls{display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem}
+  .progress{
+    height:10px;
+    background:#f0f0f0;
+    border-radius:8px;
+    overflow:hidden;
+    flex:1;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);
+    border:1px solid var(--border-light);
+  }
+  .progress > i{
+    display:block;
+    height:100%;
+    width:46%;
+    background:var(--bw-foreground);
+    border-radius:8px;
+  }
+
+  .mailing-box{
+    border-radius:var(--radius);
+    padding:1.25rem;
+    background:white;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);
+    display:flex;
+    flex-direction:column;
+    gap:0.75rem;
+    border:1px solid var(--border-light);
+  }
+  .mailing-box p{margin:0;color:var(--muted)}
+
+  .card{
+    border-radius:var(--radius);
+    padding:1.5rem;
+    background:white;
+    box-shadow:0 2px 16px rgba(0,0,0,0.06);
+    border:2px solid var(--border-light);
+    transition:border-color 200ms ease;
+  }
+  
+  .card:hover{
+    border-color:var(--bw-foreground);
+  }
+  
+  .card p{margin:0.5rem 0}
+
+  .submit-cta{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
+  .btn{
+    display:inline-block;
+    padding:0.7rem 1.25rem;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:0.95rem;
+    transition:all 200ms ease;
+    cursor:pointer;
+  }
+  
+  .btn:not(.outline){
+    background:var(--bw-foreground);
+    color:var(--bw-background);
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    border:2px solid var(--bw-foreground);
+  }
+  
+  .btn:not(.outline):hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+  }
+  
+  .btn.outline{
+    background:transparent;
+    color:var(--bw-foreground);
+    border:2px solid var(--bw-foreground);
+  }
+  
+  .btn.outline:hover{
+    background:var(--bw-foreground);
+    color:var(--bw-background);
+  }
+
+  footer.site-footer{
+    margin-top:3rem;
+    padding-top:1.5rem;
+    text-align:center;
+    color:var(--muted);
+    font-size:0.95rem;
+    border-top:3px solid var(--bw-foreground);
+  }
+  
+  footer a{
+    color:var(--bw-foreground);
+    text-decoration:none;
+    font-weight:600;
+    transition:opacity 200ms ease;
+  }
+  
+  footer a:hover{opacity:0.6}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  section{margin-top:2.5rem}
+  
+  section p a{
+    color:var(--bw-foreground);
+    font-weight:600;
+    text-decoration:none;
+    border-bottom:2px solid var(--bw-foreground);
+    transition:all 200ms ease;
+  }
+  
+  section p a:hover{
+    opacity:0.7;
+  }
+
+  @media (max-width:980px){
+    .grid-two{grid-template-columns:1fr}
+    .logo h1{font-size:1.8rem}
+    .lead{font-size:1.8rem}
+    .wrap{padding:1rem;margin:1rem auto}
+    .feature-list{grid-template-columns:1fr}
+  }
+
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <main id="home" class="hero" role="main">
+      <article class="cover" aria-labelledby="cover-head">
+        <div>
+          <h2 id="cover-head" class="lead">Welcome to QWRT</h2>
+          <p class="sub">A monthly music magazine + 24/7 radio.</p>
+        </div>
+
+         <p>QWRT Magazine looks for music industry coverage, album reviews, and indie stories. We run monthly issues online and have physical print runs in select locations to be determined.
+         <br>
+                  <br>
+
+
+           <a class="btn" href="https://radio.qwrt.online" target="_blank" rel="noopener">Tune into our 24/7 radio station</a>
+</p>
+      </article>
+    </main>
+
+    <section class="grid-two" id="magazine" aria-label="Magazine and radio">
+      <div>
+       
+
+        <div style="margin-top:1.5rem">
+          <h4 style="margin:0 0 0.75rem;font-weight:800;font-size:1.25rem">Mailing list for updates and issues</h4>
+
+          <div class="mailing-box" role="form" aria-label="Mailing list signup">
+            <div data-supascribe-embed-id="280461926589" data-supascribe-subscribe aria-label="Supascribe subscribe"></div>
+            <script src="https://js.supascribe.com/v1/loader/buMiRanraPW6BlmskH1SDTIXjZf1.js" async></script>
+          </div>
+
+          <small style="opacity:0.75;margin-top:0.75rem;display:block;color:var(--muted)">If the widget doesn't load, please try again or contact hello@qwrt.online</small>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <section id="submit">
+      <h3 class="section-title">How can I contribute?</h3>
+      <div class="card">
+        <p>We accept submissions for features, reviews, and interviews.</p>
+        <div class="submit-cta">
+          <a class="btn" href="https://tiny.cc/qwrtsubmissons" target="_blank" rel="noopener">Submit your work</a>
+          <a class="btn outline" href="mailto:hello@qwrt.online">Or contact us at hello@qwrt.online</a>
+        </div>
+        <small style="opacity:0.75;display:block;margin-top:1rem;color:var(--muted)">By submitting you agree we may contact the email provided.</small>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div>© 2026 QWRT Media • <a href="mailto:hello@qwrt.online">hello@qwrt.online</a></div>
+    </footer>
+  </div>
+
+</body>
+</html>
