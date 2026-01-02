@@ -301,31 +301,9 @@
 
       <div class="radio-player">
         <h3 class="section-title">Now Playing</h3>
-        <div id="now-playing-info" style="margin-bottom:1.5rem">
-          <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
-            <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
-              <span style="font-size:3rem;opacity:0.3">♪</span>
-            </div>
-            <div style="flex:1;min-width:0">
-              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground)">Loading...</div>
-              <div id="artist-name" style="color:var(--muted);font-size:1rem">Connecting to stream...</div>
-            </div>
-          </div>
+        <div style="border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+          <iframe src="https://stream.qwrt.online/public/qwrt/embed?theme=dark" frameborder="0" allowtransparency="true" style="width: 100%; min-height: 200px; border: 0; border-radius: 12px;"></iframe>
         </div>
-        
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-          <button id="play-btn" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
-            ▶
-          </button>
-          <div style="flex:1">
-            <input type="range" id="volume" min="0" max="100" value="70" style="width:100%;height:8px;border-radius:8px;background:#f0f0f0;outline:none;-webkit-appearance:none;appearance:none">
-          </div>
-          <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
-        </div>
-        
-        <audio id="radio-stream" preload="none">
-          <source src="https://stream.qwrt.online/radio/8000/radio.mp3" type="audio/mpeg">
-        </audio>
       </div>
     </main>
 
@@ -344,80 +322,6 @@
       <div>© 2026 QWRT Media • <a href="mailto:hello@qwrt.online">hello@qwrt.online</a></div>
     </footer>
   </div>
-
-  <script>
-    const audio = document.getElementById('radio-stream');
-    const playBtn = document.getElementById('play-btn');
-    const volumeSlider = document.getElementById('volume');
-    const volumeDisplay = document.getElementById('volume-display');
-    const songTitle = document.getElementById('song-title');
-    const artistName = document.getElementById('artist-name');
-    const albumArt = document.getElementById('album-art');
-
-    let isPlaying = false;
-
-    // Set initial volume
-    audio.volume = 0.7;
-
-    playBtn.addEventListener('click', () => {
-      if (isPlaying) {
-        audio.pause();
-        playBtn.textContent = '▶';
-        isPlaying = false;
-      } else {
-        audio.play();
-        playBtn.textContent = '⏸';
-        isPlaying = true;
-      }
-    });
-
-    volumeSlider.addEventListener('input', (e) => {
-      const volume = e.target.value / 100;
-      audio.volume = volume;
-      volumeDisplay.textContent = e.target.value + '%';
-    });
-
-    // Fetch now playing info from AzuraCast API
-    async function updateNowPlaying() {
-      // Try multiple possible API endpoints
-      const endpoints = [
-        'https://stream.qwrt.online/api/nowplaying_static/qwrt.json',
-        'https://stream.qwrt.online/api/nowplaying/qwrt',
-        'https://stream.qwrt.online/api/nowplaying',
-        'https://stream.qwrt.online/api/nowplaying_static/1.json'
-      ];
-      
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(endpoint);
-          if (!response.ok) continue;
-          
-          const data = await response.json();
-          
-          if (data && data.now_playing) {
-            const np = data.now_playing;
-            songTitle.textContent = np.song.title || 'Unknown Track';
-            artistName.textContent = np.song.artist || 'Unknown Artist';
-            
-            if (np.song.art) {
-              albumArt.innerHTML = `<img src="${np.song.art}" alt="Album art" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
-            }
-            return; // Success, exit function
-          }
-        } catch (error) {
-          continue; // Try next endpoint
-        }
-      }
-      
-      // If all endpoints fail
-      songTitle.textContent = 'Live Stream';
-      artistName.textContent = 'Now Playing';
-    }
-
-    // Update now playing every 10 seconds
-    updateNowPlaying();
-    setInterval(updateNowPlaying, 10000);
-  </script>
 
 </body>
 </html>
