@@ -127,22 +127,6 @@
     margin-top: -6px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
-  input[type=range]::-moz-range-track {
-    width: 100%;
-    height: 8px;
-    cursor: pointer;
-    background: #e0e0e0;
-    border-radius: 8px;
-  }
-  input[type=range]::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
-    border: none;
-    border-radius: 50%;
-    background: var(--bw-foreground);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
   
   #play-btn:hover {
     transform: scale(1.05);
@@ -242,7 +226,6 @@
     100% { opacity: 1; }
   }
   
-  /* Album Art Animation */
   #album-art img {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -251,7 +234,6 @@
     opacity: 1;
   }
 
-  /* Utility to hide elements visually but keep them available for screen readers/browsers */
   .visually-hidden-iframe {
     position: absolute;
     width: 1px;
@@ -330,26 +312,10 @@
         
         <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem;min-height:1.2em;">Ready to tune in</div>
         
-        <!-- 
-          IMPORTANT: Do not use display:none. 
-          Use the visually-hidden class to keep the iframe technically "visible" 
-          to the browser engine (1x1 pixel) to prevent aggressive throttling of 
-          scripts/postMessages when the tab is in the background.
-        -->
+        <!-- Updated iframe for the correct source domain -->
         <iframe id="metadata-iframe" class="visually-hidden-iframe" src="https://stream.qwrt.online/public/qwrt/embed" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
     </main>
-
-    <section>
-      <h3 class="section-title">About QWRT</h3>
-      <div class="card">
-        <p>QWRT is more than just a radio station. We're a community-driven music magazine and broadcasting platform dedicated to showcasing independent artists and alternative sounds.</p>
-        <div style="margin-top:1.5rem">
-          <a class="btn" href="https://qwrt.online" rel="noopener">Read the Magazine</a>
-          <a class="btn outline" href="https://tiny.cc/qwrtsubmissons" target="_blank" rel="noopener" style="margin-left:0.75rem">Submit Music</a>
-        </div>
-      </div>
-    </section>
 
     <footer class="site-footer">
       <div>© 2026 QWRT Media • <a href="mailto:hello@qwrt.online">hello@qwrt.online</a></div>
@@ -368,22 +334,21 @@
   const streamStatus = document.getElementById('stream-status');
   const connectionStatus = document.getElementById('connection-status');
   
-  // Internal state
+  // Updated STREAM_URL to your specific endpoint
   const STREAM_URL = "https://stream.qwrt.online/listen/qwrt/radio.mp3";
+  // Added API endpoint for stream.qwrt.online
+  const API_URL = "https://stream.qwrt.online/api/nowplaying/qwrt";
+
   let isPlaying = false;
   let retryCount = 0;
   let metadataInterval = null;
   let lastMetadata = { title: '', artist: '', art: '' };
   let wakeLock = null;
 
-  // Default Artwork (Transparent SVG)
   const DEFAULT_ART = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="%23f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="200" fill="%23cccccc" text-anchor="middle" dy=".3em">♪</text></svg>';
-
-  // --- AUDIO CONTROLS ---
 
   function togglePlay() {
     if (audio.paused) {
-      // Force live stream: Add timestamp to prevent stale cache buffering
       audio.src = `${STREAM_URL}?ts=${Date.now()}`;
       audio.load();
 
@@ -393,16 +358,13 @@
         startMetadataService();
         acquireWakeLock();
       }).catch(err => {
-        console.error("Playback failed", err);
         connectionStatus.textContent = "Click Play again to start";
         isPlaying = false;
         updateUIState(false);
       });
     } else {
       audio.pause();
-      // Stop downloading to save bandwidth and ensure next play is live
       audio.src = "";
-      
       isPlaying = false;
       updateUIState(false);
       stopMetadataService();
@@ -414,19 +376,17 @@
     if (playing) {
       playBtn.innerHTML = '❚❚';
       playBtn.setAttribute('aria-label', 'Pause');
-      playBtn.style.paddingLeft = '0'; // Center the pause icon
+      playBtn.style.paddingLeft = '0';
       streamStatus.className = 'status-indicator live';
       connectionStatus.textContent = "Live Stream Connected";
     } else {
       playBtn.innerHTML = '▶';
       playBtn.setAttribute('aria-label', 'Play');
-      playBtn.style.paddingLeft = '4px'; // Optical centering for play icon
+      playBtn.style.paddingLeft = '4px';
       streamStatus.className = 'status-indicator offline';
       connectionStatus.textContent = "Stream Paused";
     }
   }
-
-  // --- VOLUME CONTROL ---
 
   volume.addEventListener('input', (e) => {
     const val = e.target.value;
@@ -434,105 +394,63 @@
     volumeDisplay.textContent = val + '%';
   });
 
-  // --- METADATA & MEDIA SESSION ---
-
   function updateMetadata(title, artist, artUrl) {
-    // Prevent duplicate updates
     if (lastMetadata.title === title && lastMetadata.artist === artist && lastMetadata.art === artUrl) return;
     lastMetadata = { title, artist, art: artUrl };
 
-    // 1. Update DOM text
     songTitle.textContent = title || 'QWRT Radio';
     artistName.textContent = artist || 'Broadcasting Live';
 
-    // 2. Load Image & Update DOM + Media Session
     const imgObj = new Image();
-    // Use fallback if artUrl is missing
     const validArtUrl = artUrl || DEFAULT_ART;
     
     imgObj.crossOrigin = "anonymous";
     imgObj.src = validArtUrl;
     
     imgObj.onload = () => {
-      // Update DOM Image
       albumArt.innerHTML = ''; 
       imgObj.style.width = '100%';
       imgObj.style.height = '100%';
       imgObj.style.objectFit = 'cover';
-      imgObj.className = 'loaded'; // Triggers CSS fade-in
+      imgObj.className = 'loaded';
       albumArt.appendChild(imgObj);
 
-      // Update Media Session (Lock Screen)
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: title || 'QWRT Radio',
           artist: artist || 'Broadcasting Live',
           album: 'QWRT Radio',
           artwork: [
-            { src: validArtUrl, sizes: '96x96', type: 'image/jpeg' },
-            { src: validArtUrl, sizes: '128x128', type: 'image/jpeg' },
-            { src: validArtUrl, sizes: '192x192', type: 'image/jpeg' },
-            { src: validArtUrl, sizes: '256x256', type: 'image/jpeg' },
-            { src: validArtUrl, sizes: '384x384', type: 'image/jpeg' },
-            { src: validArtUrl, sizes: '512x512', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '512x512', type: 'image/jpeg' }
           ]
-        });
-      }
-    };
-    
-    imgObj.onerror = () => {
-      // Handle broken image links
-      if ('mediaSession' in navigator) {
-         navigator.mediaSession.metadata = new MediaMetadata({
-          title: title,
-          artist: artist,
-          album: 'QWRT Radio',
-          artwork: [{ src: DEFAULT_ART, sizes: '512x512', type: 'image/svg+xml' }]
         });
       }
     };
   }
 
   async function fetchMetadata() {
-    // Strategy: Try Static JSON first (fastest/cached), then fallback to standard API
-    const endpoints = [
-      'https://stream.qwrt.online/api/nowplaying_static/qwrt.json',
-      'https://stream.qwrt.online/api/nowplaying/qwrt'
-    ];
-
-    for (let url of endpoints) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
-        
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (res.ok) {
-          const data = await res.json();
-          // Normalized AzuraCast response parsing
-          let song = null;
-          if (data.now_playing && data.now_playing.song) {
-            song = data.now_playing.song;
-          } else if (data.song) {
-            song = data.song;
-          }
-
-          if (song) {
-            updateMetadata(song.title, song.artist, song.art);
-            return; // Success, exit loop
-          }
+    try {
+      const res = await fetch(`${API_URL}?cb=${Date.now()}`, { 
+        mode: 'cors',
+        cache: 'no-store'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const song = data.now_playing?.song;
+        if (song) {
+          updateMetadata(song.title, song.artist, song.art);
         }
-      } catch (e) {
-        // Continue to next endpoint
       }
+    } catch (e) {
+      console.warn("Metadata error - Ensure 'radio.qwrt.online' is allowed in AzuraCast CORS settings.");
     }
   }
 
   function startMetadataService() {
-    fetchMetadata(); // Run immediately
+    fetchMetadata();
     if (!metadataInterval) {
-      metadataInterval = setInterval(fetchMetadata, 10000); // Poll every 10s
+      metadataInterval = setInterval(fetchMetadata, 15000);
     }
   }
 
@@ -543,22 +461,17 @@
     }
   }
 
-  // --- IFRAME FALLBACK LISTENER (AzuraCast Widget) ---
-  // This helps if API is blocked by CORS but iframe loads
+  // Listen for metadata from the embedded AzuraCast player iframe
   window.addEventListener('message', (event) => {
-    // Security check: ensure it comes from your stream domain if possible
-    // if (event.origin !== "https://stream.qwrt.online") return;
-
+    if (event.origin !== 'https://stream.qwrt.online') return;
     try {
       const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
       if (data?.np?.now_playing?.song) {
         const s = data.np.now_playing.song;
         updateMetadata(s.title, s.artist, s.art);
       }
-    } catch (e) { /* Ignore non-JSON messages */ }
+    } catch (e) {}
   });
-
-  // --- AUDIO EVENT LISTENERS ---
 
   audio.addEventListener('playing', () => {
     updateUIState(true);
@@ -570,56 +483,30 @@
     connectionStatus.textContent = "Buffering...";
   });
 
-  audio.addEventListener('error', (e) => {
-    console.error("Audio Error", e);
+  audio.addEventListener('error', () => {
     updateUIState(false);
     connectionStatus.textContent = "Stream connection lost. Retrying...";
-    
-    // Auto-retry logic
     if (retryCount < 5) {
       retryCount++;
       setTimeout(() => {
         audio.load();
         audio.play().catch(() => {});
-      }, 2000 * retryCount);
+      }, 3000 * retryCount);
     }
   });
 
-  // --- MEDIA SESSION ACTION HANDLERS (Lock Screen Controls) ---
-  
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => togglePlay());
-    navigator.mediaSession.setActionHandler('pause', () => togglePlay());
-    navigator.mediaSession.setActionHandler('stop', () => {
-      audio.pause();
-      audio.currentTime = 0;
-      updateUIState(false);
-    });
-  }
-
-  // --- WAKE LOCK (Keep screen alive if supported) ---
-  
   async function acquireWakeLock() {
     if ('wakeLock' in navigator) {
-      try {
-        wakeLock = await navigator.wakeLock.request('screen');
-      } catch (err) {
-        console.log('Wake Lock ignored (battery saver or background)');
-      }
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
     }
   }
 
   function releaseWakeLock() {
-    if (wakeLock) {
-      wakeLock.release().then(() => { wakeLock = null; });
-    }
+    if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }); }
   }
-
-  // --- INITIALIZATION ---
 
   playBtn.addEventListener('click', togglePlay);
   
-  // Keyboard shortcut
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
       e.preventDefault();
@@ -627,19 +514,12 @@
     }
   });
 
-  // Handle visibility change (re-fetch metadata when returning to tab)
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && isPlaying) {
-      fetchMetadata();
-    }
+    if (!document.hidden && isPlaying) fetchMetadata();
   });
   
-  // Set initial volume
   audio.volume = parseInt(volume.value) / 100;
-  
-  // Initial fetch on load (for UI)
   fetchMetadata();
-
 })();
 </script>
 </body>
