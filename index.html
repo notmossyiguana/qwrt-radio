@@ -190,6 +190,24 @@
     transition:all 200ms ease;
   }
   section p a:hover{ opacity:0.7; }
+  .status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-indicator.live {
+    background: #22c55e;
+  }
+  .status-indicator.offline {
+    background: #ef4444;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
   @media (max-width:980px){
     .logo h1{font-size:1.8rem}
     .lead{font-size:1.8rem}
@@ -220,7 +238,10 @@
       </article>
 
       <div class="radio-player">
-        <h3 class="section-title">Now Playing</h3>
+        <h3 class="section-title">
+          <span class="status-indicator" id="stream-status"></span>
+          Now Playing
+        </h3>
         <div id="now-playing-info" style="margin-bottom:1.5rem">
           <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
             <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
@@ -248,7 +269,10 @@
           Your browser does not support the audio element.
         </audio>
         
-        <iframe id="metadata-iframe" src="https://stream.qwrt.online/public/qwrt/embed" style="display:none;"></iframe>
+        <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem"></div>
+        
+        <!-- Hidden iframe for metadata fallback -->
+        <iframe id="metadata-iframe" src="https://stream.qwrt.online/public/qwrt/embed" style="display:none;width:0;height:0;border:none;" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
     </main>
 
@@ -277,39 +301,211 @@
   const songTitle = document.getElementById('song-title');
   const artistName = document.getElementById('artist-name');
   const albumArt = document.getElementById('album-art');
+  const streamStatus = document.getElementById('stream-status');
+  const connectionStatus = document.getElementById('connection-status');
+  const metadataIframe = document.getElementById('metadata-iframe');
+
+  // State management
+  let currentMetadata = {
+    title: 'QWRT Radio',
+    artist: 'Broadcasting live',
+    art: null
+  };
+  let metadataInterval = null;
+  let reconnectAttempts = 0;
+  const maxReconnectAttempts = 5;
+  let wakeLock = null;
+  let lastMetadataUpdate = 0;
+  let metadataSource = 'none'; // Track which method is working
 
   // Set initial volume
   audio.volume = parseInt(volume.value, 10) / 100;
+
+  // Initialize Media Session API for background playback
+  function initMediaSession() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentMetadata.title,
+        artist: currentMetadata.artist,
+        album: 'QWRT Radio',
+        artwork: currentMetadata.art ? [
+          { src: currentMetadata.art, sizes: '96x96', type: 'image/jpeg' },
+          { src: currentMetadata.art, sizes: '128x128', type: 'image/jpeg' },
+          { src: currentMetadata.art, sizes: '192x192', type: 'image/jpeg' },
+          { src: currentMetadata.art, sizes: '256x256', type: 'image/jpeg' },
+          { src: currentMetadata.art, sizes: '384x384', type: 'image/jpeg' },
+          { src: currentMetadata.art, sizes: '512x512', type: 'image/jpeg' }
+        ] : [
+          { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="70" font-size="60">♪</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', async () => {
+        try {
+          await audio.play();
+        } catch (err) {
+          console.warn('Failed to play from media session:', err);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audio.pause();
+      });
+
+      navigator.mediaSession.setActionHandler('stop', () => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
+      navigator.mediaSession.setActionHandler('seekto', null);
+      
+      navigator.mediaSession.playbackState = audio.paused ? 'paused' : 'playing';
+    }
+  }
+
+  async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        console.log('Wake lock acquired');
+        
+        wakeLock.addEventListener('release', () => {
+          console.log('Wake lock released');
+        });
+      } catch (err) {
+        console.warn('Wake lock failed:', err);
+      }
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release().then(() => {
+        wakeLock = null;
+      });
+    }
+  }
 
   function setPlayingUI(isPlaying) {
     playBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
     playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
     playBtn.textContent = isPlaying ? '❚❚' : '▶';
+    
+    if (isPlaying) {
+      streamStatus.className = 'status-indicator live';
+    } else {
+      streamStatus.className = 'status-indicator offline';
+    }
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    }
   }
 
   async function togglePlay() {
     if (audio.paused) {
       try {
+        initMediaSession();
+        await requestWakeLock();
         await audio.play();
         setPlayingUI(true);
+        connectionStatus.textContent = 'Connected to stream';
+        reconnectAttempts = 0;
+        startMetadataPolling();
       } catch (err) {
         console.warn('Playback failed:', err);
         artistName.textContent = 'Unable to start playback — tap play again.';
+        connectionStatus.textContent = 'Playback error - please try again';
+        releaseWakeLock();
       }
     } else {
       audio.pause();
       setPlayingUI(false);
+      connectionStatus.textContent = 'Paused';
+      stopMetadataPolling();
+      releaseWakeLock();
     }
   }
 
   playBtn.addEventListener('click', togglePlay);
-  audio.addEventListener('play', () => setPlayingUI(true));
-  audio.addEventListener('pause', () => setPlayingUI(false));
-  audio.addEventListener('error', (ev) => {
-    console.error('Audio error', ev);
-    artistName.textContent = 'Stream temporarily offline';
+
+  audio.addEventListener('play', () => {
+    setPlayingUI(true);
+    initMediaSession();
+  });
+
+  audio.addEventListener('pause', () => {
     setPlayingUI(false);
   });
+
+  audio.addEventListener('playing', () => {
+    connectionStatus.textContent = 'Playing live' + (metadataSource !== 'none' ? ` (metadata: ${metadataSource})` : '');
+    reconnectAttempts = 0;
+  });
+
+  audio.addEventListener('waiting', () => {
+    connectionStatus.textContent = 'Buffering...';
+  });
+
+  audio.addEventListener('stalled', () => {
+    connectionStatus.textContent = 'Stream stalled - reconnecting...';
+    handleStreamError();
+  });
+
+  audio.addEventListener('error', (ev) => {
+    console.error('Audio error', ev);
+    const error = audio.error;
+    let errorMsg = 'Stream temporarily offline';
+    
+    if (error) {
+      switch (error.code) {
+        case error.MEDIA_ERR_NETWORK:
+          errorMsg = 'Network error - check connection';
+          break;
+        case error.MEDIA_ERR_DECODE:
+          errorMsg = 'Stream format error';
+          break;
+        case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMsg = 'Stream source not supported';
+          break;
+        default:
+          errorMsg = 'Playback error occurred';
+      }
+    }
+    
+    artistName.textContent = errorMsg;
+    connectionStatus.textContent = errorMsg;
+    setPlayingUI(false);
+    handleStreamError();
+  });
+
+  audio.addEventListener('ended', () => {
+    handleStreamError();
+  });
+
+  function handleStreamError() {
+    if (reconnectAttempts < maxReconnectAttempts) {
+      reconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
+      
+      connectionStatus.textContent = `Reconnecting in ${Math.ceil(delay / 1000)}s (attempt ${reconnectAttempts}/${maxReconnectAttempts})`;
+      
+      setTimeout(() => {
+        if (!audio.paused || reconnectAttempts > 0) {
+          audio.load();
+          audio.play().catch(err => {
+            console.warn('Reconnection attempt failed:', err);
+            handleStreamError();
+          });
+        }
+      }, delay);
+    } else {
+      connectionStatus.textContent = 'Unable to connect - please try again later';
+      releaseWakeLock();
+    }
+  }
 
   volume.addEventListener('input', () => {
     const pct = parseInt(volume.value, 10);
@@ -317,7 +513,6 @@
     volumeDisplay.textContent = pct + '%';
   });
 
-  // Keyboard support: Space toggles play/pause
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
       e.preventDefault();
@@ -325,11 +520,47 @@
     }
   });
 
-  // Fetch metadata from AzuraCast API
-  async function fetchMetadata() {
+  // Update metadata display
+  function updateMetadataDisplay(title, artist, art) {
+    if (title !== currentMetadata.title || 
+        artist !== currentMetadata.artist || 
+        art !== currentMetadata.art) {
+      
+      currentMetadata = { title, artist, art };
+      lastMetadataUpdate = Date.now();
+      
+      songTitle.textContent = title;
+      artistName.textContent = artist;
+      
+      if (art) {
+        // Create a new image to test if it loads
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          albumArt.innerHTML = `<img src="${art}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="Album Art" crossorigin="anonymous">`;
+        };
+        img.onerror = () => {
+          // Fallback to default icon if image fails to load
+          albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
+        };
+        img.src = art;
+      } else {
+        albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
+      }
+      
+      initMediaSession();
+    }
+  }
+
+  // Method 1: Direct API fetch (may fail due to CORS)
+  async function fetchMetadataDirectAPI() {
     try {
       const response = await fetch('https://stream.qwrt.online/api/nowplaying_static/qwrt.json', {
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json'
+        },
+        mode: 'cors'
       });
       
       if (response.ok) {
@@ -339,94 +570,185 @@
           const song = data.now_playing.song;
           const title = song.title || 'QWRT Radio';
           const artist = song.artist || 'Broadcasting live';
+          const art = song.art || null;
           
-          songTitle.textContent = title;
-          artistName.textContent = artist;
-          
-          if (song.art) {
-            albumArt.innerHTML = `<img src="${song.art}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="Album Art">`;
-          }
-          
-          // Update Media Session API for mobile lock screen controls
-          if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-              title: title,
-              artist: artist,
-              album: 'QWRT Radio',
-              artwork: song.art ? [
-                { src: song.art, sizes: '512x512', type: 'image/jpeg' }
-              ] : []
-            });
-          }
+          updateMetadataDisplay(title, artist, art);
+          metadataSource = 'api';
+          return true;
         }
       }
+      return false;
     } catch (err) {
-      // Silently fail - will retry on next interval
+      console.warn('Direct API fetch failed:', err.message);
+      return false;
     }
   }
 
-  // Fetch metadata immediately and every 10 seconds
-  fetchMetadata();
-  setInterval(fetchMetadata, 10000);
+  // Method 2: Try JSONP-style approach with script tag
+  let jsonpCallbackCount = 0;
+  function fetchMetadataJSONP() {
+    return new Promise((resolve) => {
+      const callbackName = `qwrtMetadataCallback${jsonpCallbackCount++}`;
+      const timeout = setTimeout(() => {
+        cleanup();
+        resolve(false);
+      }, 5000);
 
-  // Fallback: Listen for metadata from the AzuraCast embed iframe
-  window.addEventListener('message', (ev) => {
-    try {
-      const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[callbackName];
+        if (script && script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }
+
+      window[callbackName] = (data) => {
+        cleanup();
+        try {
+          if (data && data.now_playing && data.now_playing.song) {
+            const song = data.now_playing.song;
+            const title = song.title || 'QWRT Radio';
+            const artist = song.artist || 'Broadcasting live';
+            const art = song.art || null;
+            
+            updateMetadataDisplay(title, artist, art);
+            metadataSource = 'jsonp';
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        } catch (err) {
+          console.warn('JSONP callback error:', err);
+          resolve(false);
+        }
+      };
+
+      const script = document.createElement('script');
+      script.onerror = () => {
+        cleanup();
+        resolve(false);
+      };
+      script.src = `https://stream.qwrt.online/api/nowplaying_static/qwrt.json?callback=${callbackName}`;
+      document.head.appendChild(script);
+    });
+  }
+
+  // Method 3: Listen for iframe postMessage (AzuraCast embed widget)
+  let iframeListenerActive = false;
+  function setupIframeListener() {
+    if (iframeListenerActive) return;
+    iframeListenerActive = true;
+
+    window.addEventListener('message', (ev) => {
+      // Security: verify origin if needed
+      // if (ev.origin !== 'https://stream.qwrt.online') return;
       
-      if (data && data.np) {
-        const np = data.np;
-        if (np.now_playing && np.now_playing.song) {
-          const song = np.now_playing.song;
-          songTitle.textContent = song.title || 'QWRT Radio';
-          artistName.textContent = song.artist || 'Broadcasting live';
-          
-          if (song.art) {
-            albumArt.innerHTML = `<img src="${song.art}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="Album Art">`;
-          }
+      try {
+        const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+        
+        let title = null;
+        let artist = null;
+        let art = null;
+
+        // Handle different AzuraCast message formats
+        if (data && data.np && data.np.now_playing && data.np.now_playing.song) {
+          const song = data.np.now_playing.song;
+          title = song.title;
+          artist = song.artist;
+          art = song.art;
+        } else if (data && data.now_playing && data.now_playing.song) {
+          const song = data.now_playing.song;
+          title = song.title || song.text;
+          artist = song.artist;
+          art = song.art;
         }
-      } else if (data && data.now_playing) {
-        const np = data.now_playing;
-        if (np.song) {
-          songTitle.textContent = np.song.title || np.song.text || 'QWRT Radio';
-          artistName.textContent = np.song.artist || 'Broadcasting live';
-          
-          if (np.song.art) {
-            albumArt.innerHTML = `<img src="${np.song.art}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="Album Art">`;
-          }
+
+        if (title || artist) {
+          updateMetadataDisplay(
+            title || 'QWRT Radio',
+            artist || 'Broadcasting live',
+            art
+          );
+          metadataSource = 'iframe';
         }
+      } catch (err) {
+        // Ignore messages that aren't metadata
       }
-    } catch (err) {
-      // Silently ignore messages that aren't metadata
-    }
-  });
-
-  // Enable background playback on mobile - prevent pausing when screen locks
-  document.addEventListener('visibilitychange', () => {
-    // Don't pause when page becomes hidden (screen locks)
-    if (document.hidden && !audio.paused) {
-      // Keep playing
-    }
-  });
-
-  // Media Session API for mobile lock screen controls
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => {
-      audio.play();
-      setPlayingUI(true);
-    });
-    
-    navigator.mediaSession.setActionHandler('pause', () => {
-      audio.pause();
-      setPlayingUI(false);
-    });
-    
-    navigator.mediaSession.setActionHandler('stop', () => {
-      audio.pause();
-      audio.currentTime = 0;
-      setPlayingUI(false);
     });
   }
+
+  // Unified metadata fetching with fallback chain
+  async function fetchMetadata() {
+    // Try methods in order: API -> JSONP -> Iframe (passive listener)
+    
+    // Method 1: Direct API
+    const apiSuccess = await fetchMetadataDirectAPI();
+    if (apiSuccess) return;
+
+    // Method 2: JSONP (if API has CORS issues)
+    const jsonpSuccess = await fetchMetadataJSONP();
+    if (jsonpSuccess) return;
+
+    // Method 3: Iframe is passive (setupIframeListener already running)
+    // If no metadata has been received in 30 seconds, show a message
+    if (metadataSource === 'none' && Date.now() - lastMetadataUpdate > 30000) {
+      if (!audio.paused) {
+        connectionStatus.textContent = 'Playing (metadata unavailable)';
+      }
+    }
+  }
+
+  function startMetadataPolling() {
+    if (metadataInterval) return;
+    
+    // Set up iframe listener once
+    setupIframeListener();
+    
+    // Fetch immediately
+    fetchMetadata();
+    
+    // Poll every 10 seconds
+    metadataInterval = setInterval(fetchMetadata, 10000);
+  }
+
+  function stopMetadataPolling() {
+    if (metadataInterval) {
+      clearInterval(metadataInterval);
+      metadataInterval = null;
+    }
+  }
+
+  document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden) {
+      if (!audio.paused) {
+        fetchMetadata();
+        await requestWakeLock();
+      }
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    releaseWakeLock();
+    stopMetadataPolling();
+  });
+
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    document.addEventListener('touchstart', () => {
+      if (audio.paused) {
+        audio.load();
+      }
+    }, { once: true });
+  }
+
+  if ('mediaSession' in navigator && /Android/.test(navigator.userAgent)) {
+    initMediaSession();
+  }
+
+  window.addEventListener('load', () => {
+    fetchMetadata();
+    initMediaSession();
+    setupIframeListener(); // Start listening for iframe messages
+  });
 
 })();
 </script>
