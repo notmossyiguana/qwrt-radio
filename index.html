@@ -323,7 +323,7 @@
           <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right;font-size:0.9rem;">80%</div>
         </div>
         
-        <audio id="radio-stream" preload="none" playsinline crossorigin="anonymous">
+        <audio id="radio-stream" preload="metadata" playsinline>
           <source src="https://stream.qwrt.online/listen/qwrt/radio.mp3" type="audio/mpeg">
           Your browser does not support the audio element.
         </audio>
@@ -369,6 +369,7 @@
   const connectionStatus = document.getElementById('connection-status');
   
   // Internal state
+  const STREAM_URL = "https://stream.qwrt.online/listen/qwrt/radio.mp3";
   let isPlaying = false;
   let retryCount = 0;
   let metadataInterval = null;
@@ -382,6 +383,10 @@
 
   function togglePlay() {
     if (audio.paused) {
+      // Force live stream: Add timestamp to prevent stale cache buffering
+      audio.src = `${STREAM_URL}?ts=${Date.now()}`;
+      audio.load();
+
       audio.play().then(() => {
         isPlaying = true;
         updateUIState(true);
@@ -395,6 +400,9 @@
       });
     } else {
       audio.pause();
+      // Stop downloading to save bandwidth and ensure next play is live
+      audio.src = "";
+      
       isPlaying = false;
       updateUIState(false);
       stopMetadataService();
