@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>QWRT Radio — Live 24/7</title>
+<meta name="description" content="Independent music, curated playlists, and live shows. Broadcasting 24/7.">
+<meta name="theme-color" content="#ffffff">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -98,38 +100,64 @@
     box-shadow:0 4px 20px rgba(0,0,0,0.08);
     border:var(--border-w) solid var(--bw-foreground);
     margin-top:2rem;
+    position: relative;
+    overflow: hidden;
   }
-  #volume::-webkit-slider-thumb {
+  /* Custom Range Slider */
+  input[type=range] {
     -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--bw-foreground);
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    width: 100%;
+    background: transparent;
   }
-  #volume::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+  input[type=range]:focus { outline: none; }
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 8px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    height: 20px;
+    width: 20px;
     border-radius: 50%;
     background: var(--bw-foreground);
     cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 8px;
+  }
+  input[type=range]::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
     border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border-radius: 50%;
+    background: var(--bw-foreground);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
+  
   #play-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
   }
   #play-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.95);
   }
   .section-title{
     margin:0 0 1rem;
     font-weight:800;
     font-size:1.75rem;
     color:var(--bw-foreground);
+    display: flex;
+    align-items: center;
   }
   .card{
     border-radius:var(--radius);
@@ -192,22 +220,51 @@
   section p a:hover{ opacity:0.7; }
   .status-indicator {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    margin-right: 8px;
-    animation: pulse 2s ease-in-out infinite;
+    margin-right: 12px;
+    background: #ef4444; /* Default offline */
+    transition: background-color 0.3s ease;
   }
   .status-indicator.live {
     background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    animation: pulse 2s infinite;
   }
-  .status-indicator.offline {
-    background: #ef4444;
+  .status-indicator.loading {
+    background: #eab308;
+    animation: pulse 1s infinite;
   }
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
+    0% { opacity: 1; }
     50% { opacity: 0.5; }
+    100% { opacity: 1; }
   }
+  
+  /* Album Art Animation */
+  #album-art img {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  #album-art img.loaded {
+    opacity: 1;
+  }
+
+  /* Utility to hide elements visually but keep them available for screen readers/browsers */
+  .visually-hidden-iframe {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    opacity: 0;
+  }
+
   @media (max-width:980px){
     .logo h1{font-size:1.8rem}
     .lead{font-size:1.8rem}
@@ -242,37 +299,44 @@
           <span class="status-indicator" id="stream-status"></span>
           Now Playing
         </h3>
+        
         <div id="now-playing-info" style="margin-bottom:1.5rem">
           <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
-            <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
-              <span style="font-size:3rem;opacity:0.3">♪</span>
+            <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0;overflow:hidden;position:relative;">
+              <span style="font-size:3rem;opacity:0.3;position:absolute;">♪</span>
             </div>
             <div style="flex:1;min-width:0">
-              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground)">QWRT Radio</div>
+              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground);line-height:1.2;">QWRT Radio</div>
               <div id="artist-name" style="color:var(--muted);font-size:1rem">Broadcasting live</div>
             </div>
           </div>
         </div>
         
         <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-          <button id="play-btn" aria-pressed="false" aria-label="Play" title="Play (Space)" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
+          <button id="play-btn" aria-pressed="false" aria-label="Play" title="Play (Space)" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0;padding-left:4px;">
             ▶
           </button>
-          <div style="flex:1">
-            <input type="range" id="volume" min="0" max="100" value="70" style="width:100%;height:8px;border-radius:8px;background:#f0f0f0;outline:none;-webkit-appearance:none;appearance:none">
+          
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+            <input type="range" id="volume" min="0" max="100" value="80" aria-label="Volume">
           </div>
-          <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
+          <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right;font-size:0.9rem;">80%</div>
         </div>
         
-        <audio id="radio-stream" preload="none">
+        <audio id="radio-stream" preload="none" playsinline crossorigin="anonymous">
           <source src="https://stream.qwrt.online/listen/qwrt/radio.mp3" type="audio/mpeg">
           Your browser does not support the audio element.
         </audio>
         
-        <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem"></div>
+        <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem;min-height:1.2em;">Ready to tune in</div>
         
-        <!-- Hidden iframe for metadata fallback -->
-        <iframe id="metadata-iframe" src="https://stream.qwrt.online/public/qwrt/embed" style="display:none;width:0;height:0;border:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+        <!-- 
+          IMPORTANT: Do not use display:none. 
+          Use the visually-hidden class to keep the iframe technically "visible" 
+          to the browser engine (1x1 pixel) to prevent aggressive throttling of 
+          scripts/postMessages when the tab is in the background.
+        -->
+        <iframe id="metadata-iframe" class="visually-hidden-iframe" src="https://stream.qwrt.online/public/qwrt/embed" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
     </main>
 
@@ -303,452 +367,270 @@
   const albumArt = document.getElementById('album-art');
   const streamStatus = document.getElementById('stream-status');
   const connectionStatus = document.getElementById('connection-status');
-  const metadataIframe = document.getElementById('metadata-iframe');
-
-  // State management
-  let currentMetadata = {
-    title: 'QWRT Radio',
-    artist: 'Broadcasting live',
-    art: null
-  };
+  
+  // Internal state
+  let isPlaying = false;
+  let retryCount = 0;
   let metadataInterval = null;
-  let reconnectAttempts = 0;
-  const maxReconnectAttempts = 5;
+  let lastMetadata = { title: '', artist: '', art: '' };
   let wakeLock = null;
-  let lastMetadataUpdate = 0;
-  let metadataSource = 'none'; // Track which method is working
 
-  // Set initial volume
-  audio.volume = parseInt(volume.value, 10) / 100;
+  // Default Artwork (Transparent SVG)
+  const DEFAULT_ART = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="%23f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="200" fill="%23cccccc" text-anchor="middle" dy=".3em">♪</text></svg>';
 
-  // Initialize Media Session API for background playback
-  function initMediaSession() {
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentMetadata.title,
-        artist: currentMetadata.artist,
-        album: 'QWRT Radio',
-        artwork: currentMetadata.art ? [
-          { src: currentMetadata.art, sizes: '96x96', type: 'image/jpeg' },
-          { src: currentMetadata.art, sizes: '128x128', type: 'image/jpeg' },
-          { src: currentMetadata.art, sizes: '192x192', type: 'image/jpeg' },
-          { src: currentMetadata.art, sizes: '256x256', type: 'image/jpeg' },
-          { src: currentMetadata.art, sizes: '384x384', type: 'image/jpeg' },
-          { src: currentMetadata.art, sizes: '512x512', type: 'image/jpeg' }
-        ] : [
-          { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="70" font-size="60">♪</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
-        ]
-      });
+  // --- AUDIO CONTROLS ---
 
-      navigator.mediaSession.setActionHandler('play', async () => {
-        try {
-          await audio.play();
-        } catch (err) {
-          console.warn('Failed to play from media session:', err);
-        }
-      });
-
-      navigator.mediaSession.setActionHandler('pause', () => {
-        audio.pause();
-      });
-
-      navigator.mediaSession.setActionHandler('stop', () => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-
-      navigator.mediaSession.setActionHandler('seekbackward', null);
-      navigator.mediaSession.setActionHandler('seekforward', null);
-      navigator.mediaSession.setActionHandler('seekto', null);
-      
-      navigator.mediaSession.playbackState = audio.paused ? 'paused' : 'playing';
-    }
-  }
-
-  async function requestWakeLock() {
-    if ('wakeLock' in navigator) {
-      try {
-        wakeLock = await navigator.wakeLock.request('screen');
-        console.log('Wake lock acquired');
-        
-        wakeLock.addEventListener('release', () => {
-          console.log('Wake lock released');
-        });
-      } catch (err) {
-        console.warn('Wake lock failed:', err);
-      }
-    }
-  }
-
-  function releaseWakeLock() {
-    if (wakeLock) {
-      wakeLock.release().then(() => {
-        wakeLock = null;
-      });
-    }
-  }
-
-  function setPlayingUI(isPlaying) {
-    playBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
-    playBtn.textContent = isPlaying ? '❚❚' : '▶';
-    
-    if (isPlaying) {
-      streamStatus.className = 'status-indicator live';
-    } else {
-      streamStatus.className = 'status-indicator offline';
-    }
-
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-    }
-  }
-
-  async function togglePlay() {
+  function togglePlay() {
     if (audio.paused) {
-      try {
-        initMediaSession();
-        await requestWakeLock();
-        await audio.play();
-        setPlayingUI(true);
-        connectionStatus.textContent = 'Connected to stream';
-        reconnectAttempts = 0;
-        startMetadataPolling();
-      } catch (err) {
-        console.warn('Playback failed:', err);
-        artistName.textContent = 'Unable to start playback — tap play again.';
-        connectionStatus.textContent = 'Playback error - please try again';
-        releaseWakeLock();
-      }
+      audio.play().then(() => {
+        isPlaying = true;
+        updateUIState(true);
+        startMetadataService();
+        acquireWakeLock();
+      }).catch(err => {
+        console.error("Playback failed", err);
+        connectionStatus.textContent = "Click Play again to start";
+        isPlaying = false;
+        updateUIState(false);
+      });
     } else {
       audio.pause();
-      setPlayingUI(false);
-      connectionStatus.textContent = 'Paused';
-      stopMetadataPolling();
+      isPlaying = false;
+      updateUIState(false);
+      stopMetadataService();
       releaseWakeLock();
     }
   }
 
-  playBtn.addEventListener('click', togglePlay);
-
-  audio.addEventListener('play', () => {
-    setPlayingUI(true);
-    initMediaSession();
-  });
-
-  audio.addEventListener('pause', () => {
-    setPlayingUI(false);
-  });
-
-  audio.addEventListener('playing', () => {
-    connectionStatus.textContent = 'Playing live' + (metadataSource !== 'none' ? ` (metadata: ${metadataSource})` : '');
-    reconnectAttempts = 0;
-  });
-
-  audio.addEventListener('waiting', () => {
-    connectionStatus.textContent = 'Buffering...';
-  });
-
-  audio.addEventListener('stalled', () => {
-    connectionStatus.textContent = 'Stream stalled - reconnecting...';
-    handleStreamError();
-  });
-
-  audio.addEventListener('error', (ev) => {
-    console.error('Audio error', ev);
-    const error = audio.error;
-    let errorMsg = 'Stream temporarily offline';
-    
-    if (error) {
-      switch (error.code) {
-        case error.MEDIA_ERR_NETWORK:
-          errorMsg = 'Network error - check connection';
-          break;
-        case error.MEDIA_ERR_DECODE:
-          errorMsg = 'Stream format error';
-          break;
-        case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          errorMsg = 'Stream source not supported';
-          break;
-        default:
-          errorMsg = 'Playback error occurred';
-      }
-    }
-    
-    artistName.textContent = errorMsg;
-    connectionStatus.textContent = errorMsg;
-    setPlayingUI(false);
-    handleStreamError();
-  });
-
-  audio.addEventListener('ended', () => {
-    handleStreamError();
-  });
-
-  function handleStreamError() {
-    if (reconnectAttempts < maxReconnectAttempts) {
-      reconnectAttempts++;
-      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
-      
-      connectionStatus.textContent = `Reconnecting in ${Math.ceil(delay / 1000)}s (attempt ${reconnectAttempts}/${maxReconnectAttempts})`;
-      
-      setTimeout(() => {
-        if (!audio.paused || reconnectAttempts > 0) {
-          audio.load();
-          audio.play().catch(err => {
-            console.warn('Reconnection attempt failed:', err);
-            handleStreamError();
-          });
-        }
-      }, delay);
+  function updateUIState(playing) {
+    if (playing) {
+      playBtn.innerHTML = '❚❚';
+      playBtn.setAttribute('aria-label', 'Pause');
+      playBtn.style.paddingLeft = '0'; // Center the pause icon
+      streamStatus.className = 'status-indicator live';
+      connectionStatus.textContent = "Live Stream Connected";
     } else {
-      connectionStatus.textContent = 'Unable to connect - please try again later';
-      releaseWakeLock();
+      playBtn.innerHTML = '▶';
+      playBtn.setAttribute('aria-label', 'Play');
+      playBtn.style.paddingLeft = '4px'; // Optical centering for play icon
+      streamStatus.className = 'status-indicator offline';
+      connectionStatus.textContent = "Stream Paused";
     }
   }
 
-  volume.addEventListener('input', () => {
-    const pct = parseInt(volume.value, 10);
-    audio.volume = pct / 100;
-    volumeDisplay.textContent = pct + '%';
+  // --- VOLUME CONTROL ---
+
+  volume.addEventListener('input', (e) => {
+    const val = e.target.value;
+    audio.volume = val / 100;
+    volumeDisplay.textContent = val + '%';
   });
 
-  window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
-      e.preventDefault();
-      togglePlay();
-    }
-  });
+  // --- METADATA & MEDIA SESSION ---
 
-  // Update metadata display
-  function updateMetadataDisplay(title, artist, art) {
-    if (title !== currentMetadata.title || 
-        artist !== currentMetadata.artist || 
-        art !== currentMetadata.art) {
-      
-      currentMetadata = { title, artist, art };
-      lastMetadataUpdate = Date.now();
-      
-      songTitle.textContent = title;
-      artistName.textContent = artist;
-      
-      if (art) {
-        // Create a new image to test if it loads
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          albumArt.innerHTML = `<img src="${art}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="Album Art" crossorigin="anonymous">`;
-        };
-        img.onerror = () => {
-          // Fallback to default icon if image fails to load
-          albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
-        };
-        img.src = art;
-      } else {
-        albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
+  function updateMetadata(title, artist, artUrl) {
+    // Prevent duplicate updates
+    if (lastMetadata.title === title && lastMetadata.artist === artist && lastMetadata.art === artUrl) return;
+    lastMetadata = { title, artist, art: artUrl };
+
+    // 1. Update DOM text
+    songTitle.textContent = title || 'QWRT Radio';
+    artistName.textContent = artist || 'Broadcasting Live';
+
+    // 2. Load Image & Update DOM + Media Session
+    const imgObj = new Image();
+    // Use fallback if artUrl is missing
+    const validArtUrl = artUrl || DEFAULT_ART;
+    
+    imgObj.crossOrigin = "anonymous";
+    imgObj.src = validArtUrl;
+    
+    imgObj.onload = () => {
+      // Update DOM Image
+      albumArt.innerHTML = ''; 
+      imgObj.style.width = '100%';
+      imgObj.style.height = '100%';
+      imgObj.style.objectFit = 'cover';
+      imgObj.className = 'loaded'; // Triggers CSS fade-in
+      albumArt.appendChild(imgObj);
+
+      // Update Media Session (Lock Screen)
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: title || 'QWRT Radio',
+          artist: artist || 'Broadcasting Live',
+          album: 'QWRT Radio',
+          artwork: [
+            { src: validArtUrl, sizes: '96x96', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '128x128', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '192x192', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '256x256', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '384x384', type: 'image/jpeg' },
+            { src: validArtUrl, sizes: '512x512', type: 'image/jpeg' },
+          ]
+        });
       }
-      
-      initMediaSession();
-    }
+    };
+    
+    imgObj.onerror = () => {
+      // Handle broken image links
+      if ('mediaSession' in navigator) {
+         navigator.mediaSession.metadata = new MediaMetadata({
+          title: title,
+          artist: artist,
+          album: 'QWRT Radio',
+          artwork: [{ src: DEFAULT_ART, sizes: '512x512', type: 'image/svg+xml' }]
+        });
+      }
+    };
   }
 
-  // Method 1: Direct API fetch (may fail due to CORS)
-  async function fetchMetadataDirectAPI() {
-    try {
-      const response = await fetch('https://stream.qwrt.online/api/nowplaying_static/qwrt.json', {
-        cache: 'no-store',
-        headers: {
-          'Accept': 'application/json'
-        },
-        mode: 'cors'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.now_playing && data.now_playing.song) {
-          const song = data.now_playing.song;
-          const title = song.title || 'QWRT Radio';
-          const artist = song.artist || 'Broadcasting live';
-          const art = song.art || null;
-          
-          updateMetadataDisplay(title, artist, art);
-          metadataSource = 'api';
-          return true;
-        }
-      }
-      return false;
-    } catch (err) {
-      console.warn('Direct API fetch failed:', err.message);
-      return false;
-    }
-  }
-
-  // Method 2: Try JSONP-style approach with script tag
-  let jsonpCallbackCount = 0;
-  function fetchMetadataJSONP() {
-    return new Promise((resolve) => {
-      const callbackName = `qwrtMetadataCallback${jsonpCallbackCount++}`;
-      const timeout = setTimeout(() => {
-        cleanup();
-        resolve(false);
-      }, 5000);
-
-      function cleanup() {
-        clearTimeout(timeout);
-        delete window[callbackName];
-        if (script && script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-      }
-
-      window[callbackName] = (data) => {
-        cleanup();
-        try {
-          if (data && data.now_playing && data.now_playing.song) {
-            const song = data.now_playing.song;
-            const title = song.title || 'QWRT Radio';
-            const artist = song.artist || 'Broadcasting live';
-            const art = song.art || null;
-            
-            updateMetadataDisplay(title, artist, art);
-            metadataSource = 'jsonp';
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        } catch (err) {
-          console.warn('JSONP callback error:', err);
-          resolve(false);
-        }
-      };
-
-      const script = document.createElement('script');
-      script.onerror = () => {
-        cleanup();
-        resolve(false);
-      };
-      script.src = `https://stream.qwrt.online/api/nowplaying_static/qwrt.json?callback=${callbackName}`;
-      document.head.appendChild(script);
-    });
-  }
-
-  // Method 3: Listen for iframe postMessage (AzuraCast embed widget)
-  let iframeListenerActive = false;
-  function setupIframeListener() {
-    if (iframeListenerActive) return;
-    iframeListenerActive = true;
-
-    window.addEventListener('message', (ev) => {
-      // Security: verify origin if needed
-      // if (ev.origin !== 'https://stream.qwrt.online') return;
-      
-      try {
-        const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-        
-        let title = null;
-        let artist = null;
-        let art = null;
-
-        // Handle different AzuraCast message formats
-        if (data && data.np && data.np.now_playing && data.np.now_playing.song) {
-          const song = data.np.now_playing.song;
-          title = song.title;
-          artist = song.artist;
-          art = song.art;
-        } else if (data && data.now_playing && data.now_playing.song) {
-          const song = data.now_playing.song;
-          title = song.title || song.text;
-          artist = song.artist;
-          art = song.art;
-        }
-
-        if (title || artist) {
-          updateMetadataDisplay(
-            title || 'QWRT Radio',
-            artist || 'Broadcasting live',
-            art
-          );
-          metadataSource = 'iframe';
-        }
-      } catch (err) {
-        // Ignore messages that aren't metadata
-      }
-    });
-  }
-
-  // Unified metadata fetching with fallback chain
   async function fetchMetadata() {
-    // Try methods in order: API -> JSONP -> Iframe (passive listener)
-    
-    // Method 1: Direct API
-    const apiSuccess = await fetchMetadataDirectAPI();
-    if (apiSuccess) return;
+    // Strategy: Try Static JSON first (fastest/cached), then fallback to standard API
+    const endpoints = [
+      'https://stream.qwrt.online/api/nowplaying_static/qwrt.json',
+      'https://stream.qwrt.online/api/nowplaying/qwrt'
+    ];
 
-    // Method 2: JSONP (if API has CORS issues)
-    const jsonpSuccess = await fetchMetadataJSONP();
-    if (jsonpSuccess) return;
+    for (let url of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+        
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (res.ok) {
+          const data = await res.json();
+          // Normalized AzuraCast response parsing
+          let song = null;
+          if (data.now_playing && data.now_playing.song) {
+            song = data.now_playing.song;
+          } else if (data.song) {
+            song = data.song;
+          }
 
-    // Method 3: Iframe is passive (setupIframeListener already running)
-    // If no metadata has been received in 30 seconds, show a message
-    if (metadataSource === 'none' && Date.now() - lastMetadataUpdate > 30000) {
-      if (!audio.paused) {
-        connectionStatus.textContent = 'Playing (metadata unavailable)';
+          if (song) {
+            updateMetadata(song.title, song.artist, song.art);
+            return; // Success, exit loop
+          }
+        }
+      } catch (e) {
+        // Continue to next endpoint
       }
     }
   }
 
-  function startMetadataPolling() {
-    if (metadataInterval) return;
-    
-    // Set up iframe listener once
-    setupIframeListener();
-    
-    // Fetch immediately
-    fetchMetadata();
-    
-    // Poll every 10 seconds
-    metadataInterval = setInterval(fetchMetadata, 10000);
+  function startMetadataService() {
+    fetchMetadata(); // Run immediately
+    if (!metadataInterval) {
+      metadataInterval = setInterval(fetchMetadata, 10000); // Poll every 10s
+    }
   }
 
-  function stopMetadataPolling() {
+  function stopMetadataService() {
     if (metadataInterval) {
       clearInterval(metadataInterval);
       metadataInterval = null;
     }
   }
 
-  document.addEventListener('visibilitychange', async () => {
-    if (!document.hidden) {
-      if (!audio.paused) {
-        fetchMetadata();
-        await requestWakeLock();
+  // --- IFRAME FALLBACK LISTENER (AzuraCast Widget) ---
+  // This helps if API is blocked by CORS but iframe loads
+  window.addEventListener('message', (event) => {
+    // Security check: ensure it comes from your stream domain if possible
+    // if (event.origin !== "https://stream.qwrt.online") return;
+
+    try {
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if (data?.np?.now_playing?.song) {
+        const s = data.np.now_playing.song;
+        updateMetadata(s.title, s.artist, s.art);
       }
+    } catch (e) { /* Ignore non-JSON messages */ }
+  });
+
+  // --- AUDIO EVENT LISTENERS ---
+
+  audio.addEventListener('playing', () => {
+    updateUIState(true);
+    retryCount = 0;
+  });
+
+  audio.addEventListener('waiting', () => {
+    streamStatus.className = 'status-indicator loading';
+    connectionStatus.textContent = "Buffering...";
+  });
+
+  audio.addEventListener('error', (e) => {
+    console.error("Audio Error", e);
+    updateUIState(false);
+    connectionStatus.textContent = "Stream connection lost. Retrying...";
+    
+    // Auto-retry logic
+    if (retryCount < 5) {
+      retryCount++;
+      setTimeout(() => {
+        audio.load();
+        audio.play().catch(() => {});
+      }, 2000 * retryCount);
     }
   });
 
-  window.addEventListener('beforeunload', () => {
-    releaseWakeLock();
-    stopMetadataPolling();
-  });
+  // --- MEDIA SESSION ACTION HANDLERS (Lock Screen Controls) ---
+  
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => togglePlay());
+    navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+    navigator.mediaSession.setActionHandler('stop', () => {
+      audio.pause();
+      audio.currentTime = 0;
+      updateUIState(false);
+    });
+  }
 
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    document.addEventListener('touchstart', () => {
-      if (audio.paused) {
-        audio.load();
+  // --- WAKE LOCK (Keep screen alive if supported) ---
+  
+  async function acquireWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+      } catch (err) {
+        console.log('Wake Lock ignored (battery saver or background)');
       }
-    }, { once: true });
+    }
   }
 
-  if ('mediaSession' in navigator && /Android/.test(navigator.userAgent)) {
-    initMediaSession();
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release().then(() => { wakeLock = null; });
+    }
   }
 
-  window.addEventListener('load', () => {
-    fetchMetadata();
-    initMediaSession();
-    setupIframeListener(); // Start listening for iframe messages
+  // --- INITIALIZATION ---
+
+  playBtn.addEventListener('click', togglePlay);
+  
+  // Keyboard shortcut
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+      e.preventDefault();
+      togglePlay();
+    }
   });
+
+  // Handle visibility change (re-fetch metadata when returning to tab)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && isPlaying) {
+      fetchMetadata();
+    }
+  });
+  
+  // Set initial volume
+  audio.volume = parseInt(volume.value) / 100;
+  
+  // Initial fetch on load (for UI)
+  fetchMetadata();
 
 })();
 </script>
