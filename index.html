@@ -208,7 +208,7 @@
     height: 12px;
     border-radius: 50%;
     margin-right: 12px;
-    background: #ef4444; /* Default offline */
+    background: #ef4444;
     transition: background-color 0.3s ease;
   }
   .status-indicator.live {
@@ -232,19 +232,6 @@
   }
   #album-art img.loaded {
     opacity: 1;
-  }
-
-  .visually-hidden-iframe {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-    opacity: 0;
   }
 
   @media (max-width:980px){
@@ -305,15 +292,12 @@
           <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right;font-size:0.9rem;">80%</div>
         </div>
         
-        <audio id="radio-stream" preload="metadata" playsinline>
-          <source src="https://stream.qwrt.online/listen/qwrt/radio.mp3" type="audio/mpeg">
+        <audio id="radio-stream" preload="metadata" playsinline crossorigin="anonymous">
+          <source src="https://admin.qwrt.online/listen/qwrt" type="audio/mpeg">
           Your browser does not support the audio element.
         </audio>
         
         <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem;min-height:1.2em;">Ready to tune in</div>
-        
-        <!-- Updated iframe for the correct source domain -->
-        <iframe id="metadata-iframe" class="visually-hidden-iframe" src="https://stream.qwrt.online/public/qwrt/embed" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
     </main>
 
@@ -334,10 +318,9 @@
   const streamStatus = document.getElementById('stream-status');
   const connectionStatus = document.getElementById('connection-status');
   
-  // Updated STREAM_URL to your specific endpoint
-  const STREAM_URL = "https://stream.qwrt.online/listen/qwrt/radio.mp3";
-  // Added API endpoint for stream.qwrt.online
-  const API_URL = "https://stream.qwrt.online/api/nowplaying/qwrt";
+  // Updated to admin.qwrt.online endpoints
+  const STREAM_URL = "https://admin.qwrt.online/listen/qwrt";
+  const API_URL = "https://admin.qwrt.online/api/nowplaying/qwrt";
 
   let isPlaying = false;
   let retryCount = 0;
@@ -349,7 +332,7 @@
 
   function togglePlay() {
     if (audio.paused) {
-      audio.src = `${STREAM_URL}?ts=${Date.now()}`;
+      audio.src = STREAM_URL;
       audio.load();
 
       audio.play().then(() => {
@@ -357,6 +340,7 @@
         updateUIState(true);
         startMetadataService();
         acquireWakeLock();
+        setupMediaSession();
       }).catch(err => {
         connectionStatus.textContent = "Click Play again to start";
         isPlaying = false;
@@ -364,7 +348,6 @@
       });
     } else {
       audio.pause();
-      audio.src = "";
       isPlaying = false;
       updateUIState(false);
       stopMetadataService();
@@ -414,18 +397,45 @@
       imgObj.style.objectFit = 'cover';
       imgObj.className = 'loaded';
       albumArt.appendChild(imgObj);
+    };
 
-      if ('mediaSession' in navigator) {
+    imgObj.onerror = () => {
+      albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3;">♪</span>';
+    };
+  }
+
+  function setupMediaSession() {
+    if ('mediaSession' in navigator && lastMetadata.title) {
+      try {
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: title || 'QWRT Radio',
-          artist: artist || 'Broadcasting Live',
+          title: lastMetadata.title || 'QWRT Radio',
+          artist: lastMetadata.artist || 'Broadcasting Live',
           album: 'QWRT Radio',
           artwork: [
-            { src: validArtUrl, sizes: '512x512', type: 'image/jpeg' }
+            { src: lastMetadata.art || DEFAULT_ART, sizes: '512x512', type: 'image/jpeg' }
           ]
         });
+
+        navigator.mediaSession.playbackState = 'playing';
+
+        // Handle media control actions
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (audio.paused) audio.play();
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+          audio.pause();
+        });
+
+        navigator.mediaSession.setActionHandler('stop', () => {
+          audio.pause();
+          isPlaying = false;
+          updateUIState(false);
+        });
+      } catch (e) {
+        console.warn('Media Session API error:', e);
       }
-    };
+    }
   }
 
   async function fetchMetadata() {
@@ -437,20 +447,21 @@
       
       if (res.ok) {
         const data = await res.json();
-        const song = data.now_playing?.song;
+        const song = data.current_song;
         if (song) {
-          updateMetadata(song.title, song.artist, song.art);
+          updateMetadata(song.title, song.artist, song.album_art_url);
+          setupMediaSession();
         }
       }
     } catch (e) {
-      console.warn("Metadata error - Ensure 'radio.qwrt.online' is allowed in AzuraCast CORS settings.");
+      console.warn("Metadata fetch error - Check CORS settings on admin.qwrt.online");
     }
   }
 
   function startMetadataService() {
     fetchMetadata();
     if (!metadataInterval) {
-      metadataInterval = setInterval(fetchMetadata, 15000);
+      metadataInterval = setInterval(fetchMetadata, 10000);
     }
   }
 
@@ -460,18 +471,6 @@
       metadataInterval = null;
     }
   }
-
-  // Listen for metadata from the embedded AzuraCast player iframe
-  window.addEventListener('message', (event) => {
-    if (event.origin !== 'https://stream.qwrt.online') return;
-    try {
-      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-      if (data?.np?.now_playing?.song) {
-        const s = data.np.now_playing.song;
-        updateMetadata(s.title, s.artist, s.art);
-      }
-    } catch (e) {}
-  });
 
   audio.addEventListener('playing', () => {
     updateUIState(true);
