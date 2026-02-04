@@ -3,24 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radio Player Debug</title>
+<title>Radio Player - Advanced Debug</title>
 <style>
   :root{
     --bw-foreground:#0b0b0b;
     --bw-background:#ffffff;
     --muted:#6b6b6b;
     --border-light:#e6e6e6;
+    --success:#d4edda;
+    --success-text:#155724;
+    --error:#f8d7da;
+    --error-text:#721c24;
+    --warning:#fff3cd;
+    --warning-text:#856404;
+    --info:#d1ecf1;
+    --info-text:#0c5460;
   }
   
   body {
     font-family: system-ui, -apple-system, sans-serif;
     padding: 20px;
     background: #f5f5f5;
+    margin: 0;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  @media (max-width: 968px) {
+    .container {
+      grid-template-columns: 1fr;
+    }
   }
   
   .radio-player {
-    max-width: 600px;
-    margin: 0 auto;
     background: white;
     padding: 2rem;
     border-radius: 16px;
@@ -55,76 +76,251 @@
     transform: scale(1.05);
   }
   
-  .debug-info {
-    margin-top: 2rem;
-    padding: 1rem;
-    background: #f0f0f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
+  .debug-panel {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   }
   
-  .debug-info h4 {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
+  .debug-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .debug-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  
+  .debug-section h4 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--bw-foreground);
   }
   
   .status {
-    padding: 0.5rem;
+    padding: 0.75rem;
     margin: 0.5rem 0;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
   
   .status.success {
-    background: #d4edda;
-    color: #155724;
+    background: var(--success);
+    color: var(--success-text);
+    border-left: 4px solid #28a745;
   }
   
   .status.error {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--error);
+    color: var(--error-text);
+    border-left: 4px solid #dc3545;
+  }
+  
+  .status.warning {
+    background: var(--warning);
+    color: var(--warning-text);
+    border-left: 4px solid #ffc107;
   }
   
   .status.info {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: var(--info);
+    color: var(--info-text);
+    border-left: 4px solid #17a2b8;
+  }
+  
+  .status strong {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .status small {
+    display: block;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+  }
+  
+  .metric {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .metric:last-child {
+    border-bottom: none;
+  }
+  
+  .metric-label {
+    font-weight: 600;
+    color: var(--muted);
+  }
+  
+  .metric-value {
+    font-family: 'Courier New', monospace;
+    color: var(--bw-foreground);
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .badge.ok { background: #28a745; color: white; }
+  .badge.fail { background: #dc3545; color: white; }
+  .badge.warn { background: #ffc107; color: #000; }
+  
+  .test-button {
+    background: var(--bw-foreground);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  
+  .test-button:hover {
+    opacity: 0.9;
+  }
+  
+  .console-log {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+  }
+  
+  .console-log .log-line {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #2d2d2d;
+  }
+  
+  .console-log .log-error { color: #f48771; }
+  .console-log .log-warn { color: #dcdcaa; }
+  .console-log .log-info { color: #4ec9b0; }
+  .console-log .log-success { color: #4fc1ff; }
+  
+  .header-table {
+    width: 100%;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  
+  .header-table td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .header-table td:first-child {
+    font-weight: 600;
+    color: var(--muted);
+    width: 40%;
+  }
+  
+  .header-table td:last-child {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
   }
 </style>
 </head>
 <body>
 
-<div class="radio-player">
-  <h3 class="section-title">Now Playing</h3>
-  <div id="now-playing-info" style="margin-bottom:1.5rem">
-    <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
-      <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
-        <span style="font-size:3rem;opacity:0.3">♪</span>
+<div class="container">
+  <!-- Left Column: Radio Player -->
+  <div class="radio-player">
+    <h3 class="section-title">Radio Player</h3>
+    
+    <div id="now-playing-info" style="margin-bottom:1.5rem">
+      <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1rem">
+        <div id="album-art" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg, #f0f0f0, #fafafa);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid var(--border-light);flex-shrink:0">
+          <span style="font-size:3rem;opacity:0.3">♪</span>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground)">Not Connected</div>
+          <div id="artist-name" style="color:var(--muted);font-size:1rem">Waiting...</div>
+        </div>
       </div>
-      <div style="flex:1;min-width:0">
-        <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground)">Loading...</div>
-        <div id="artist-name" style="color:var(--muted);font-size:1rem">Connecting to stream...</div>
+    </div>
+    
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+      <button id="play-btn" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
+        ▶
+      </button>
+      <div style="flex:1">
+        <input type="range" id="volume" min="0" max="100" value="70" style="width:100%;height:8px;border-radius:8px;background:#f0f0f0;outline:none;-webkit-appearance:none;appearance:none">
       </div>
+      <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
+    </div>
+    
+    <audio id="radio-stream" preload="none" crossorigin="anonymous">
+      <source src="https://stream.qwrt.online/radio/8000/radio.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div class="debug-section">
+      <h4>Quick Status</h4>
+      <div id="quick-status"></div>
     </div>
   </div>
   
-  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-    <button id="play-btn" style="width:60px;height:60px;border-radius:50%;background:var(--bw-foreground);color:var(--bw-background);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 200ms ease;flex-shrink:0">
-      ▶
-    </button>
-    <div style="flex:1">
-      <input type="range" id="volume" min="0" max="100" value="70" style="width:100%;height:8px;border-radius:8px;background:#f0f0f0;outline:none;-webkit-appearance:none;appearance:none">
+  <!-- Right Column: Debug Panel -->
+  <div class="debug-panel">
+    <h3 class="section-title">Diagnostics</h3>
+    
+    <!-- Network Tests -->
+    <div class="debug-section">
+      <h4>🌐 Network Tests</h4>
+      <div id="network-tests"></div>
+      <button class="test-button" onclick="runNetworkTests()">Re-run Network Tests</button>
     </div>
-    <div id="volume-display" style="font-weight:600;color:var(--muted);min-width:45px;text-align:right">70%</div>
-  </div>
-  
-  <audio id="radio-stream" preload="none">
-    <source src="https://stream.qwrt.online/radio/8000/radio.mp3" type="audio/mpeg">
-  </audio>
-  
-  <div class="debug-info">
-    <h4>Debug Information</h4>
-    <div id="stream-status" class="status info">Checking stream...</div>
-    <div id="api-status" class="status info">Checking API...</div>
-    <div id="audio-status" class="status info">Audio state: Not started</div>
+    
+    <!-- CORS Analysis -->
+    <div class="debug-section">
+      <h4>🔒 CORS Analysis</h4>
+      <div id="cors-analysis"></div>
+      <button class="test-button" onclick="runCORSTests()">Test CORS Headers</button>
+    </div>
+    
+    <!-- Audio Stream -->
+    <div class="debug-section">
+      <h4>🎵 Audio Stream</h4>
+      <div id="audio-diagnostics"></div>
+    </div>
+    
+    <!-- API Response -->
+    <div class="debug-section">
+      <h4>📡 API Response</h4>
+      <div id="api-response"></div>
+      <button class="test-button" onclick="testAPI()">Fetch API Data</button>
+    </div>
+    
+    <!-- Request Headers -->
+    <div class="debug-section">
+      <h4>📨 Request/Response Details</h4>
+      <div id="request-details"></div>
+    </div>
+    
+    <!-- Console Log -->
+    <div class="debug-section">
+      <h4>📋 Console Log</h4>
+      <div id="console-log" class="console-log"></div>
+      <button class="test-button" onclick="clearConsoleLog()">Clear Log</button>
+    </div>
   </div>
 </div>
 
@@ -137,54 +333,110 @@
   const artistName = document.getElementById('artist-name');
   const albumArt = document.getElementById('album-art');
   
-  // Debug elements
-  const streamStatus = document.getElementById('stream-status');
-  const apiStatus = document.getElementById('api-status');
-  const audioStatus = document.getElementById('audio-status');
-
+  const STREAM_URL = 'https://stream.qwrt.online/radio/8000/radio.mp3';
+  const API_URL = 'https://stream.qwrt.online/api/nowplaying/qwrt';
+  
   let isPlaying = false;
+  let consoleLogLines = [];
+  let testResults = {
+    stream: null,
+    api: null,
+    cors: null,
+    audio: null
+  };
+
+  // Enhanced console logging
+  function log(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString();
+    const logLine = { timestamp, message, type };
+    consoleLogLines.push(logLine);
+    
+    // Keep only last 50 lines
+    if (consoleLogLines.length > 50) {
+      consoleLogLines.shift();
+    }
+    
+    updateConsoleLog();
+    console.log(`[${type.toUpperCase()}] ${message}`);
+  }
+  
+  function updateConsoleLog() {
+    const consoleEl = document.getElementById('console-log');
+    consoleEl.innerHTML = consoleLogLines.map(line => 
+      `<div class="log-line log-${line.type}">[${line.timestamp}] ${line.message}</div>`
+    ).join('');
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+  
+  function clearConsoleLog() {
+    consoleLogLines = [];
+    updateConsoleLog();
+  }
 
   // Set initial volume
   audio.volume = 0.7;
 
-  // Audio event listeners for debugging
+  // Audio event listeners
   audio.addEventListener('loadstart', () => {
-    audioStatus.textContent = 'Audio state: Loading...';
-    audioStatus.className = 'status info';
+    log('Audio loading started', 'info');
+    updateAudioDiagnostics('Loading stream...', 'info');
   });
   
   audio.addEventListener('canplay', () => {
-    audioStatus.textContent = 'Audio state: Ready to play';
-    audioStatus.className = 'status success';
+    log('Audio ready to play', 'success');
+    updateAudioDiagnostics('Stream loaded and ready', 'success');
+    testResults.audio = true;
+    updateQuickStatus();
   });
   
   audio.addEventListener('playing', () => {
-    audioStatus.textContent = 'Audio state: Playing';
-    audioStatus.className = 'status success';
+    log('Audio playing', 'success');
+    updateAudioDiagnostics('Currently playing', 'success');
+  });
+  
+  audio.addEventListener('pause', () => {
+    log('Audio paused', 'info');
+    updateAudioDiagnostics('Paused', 'info');
+  });
+  
+  audio.addEventListener('waiting', () => {
+    log('Audio buffering...', 'warn');
+    updateAudioDiagnostics('Buffering...', 'warning');
   });
   
   audio.addEventListener('error', (e) => {
-    audioStatus.textContent = `Audio error: ${e.target.error ? e.target.error.message : 'Unknown error'}`;
-    audioStatus.className = 'status error';
-    streamStatus.textContent = 'Stream: Connection failed';
-    streamStatus.className = 'status error';
+    const errorMsg = e.target.error ? 
+      `Code ${e.target.error.code}: ${getMediaErrorMessage(e.target.error.code)}` : 
+      'Unknown error';
+    log(`Audio error: ${errorMsg}`, 'error');
+    updateAudioDiagnostics(errorMsg, 'error');
+    testResults.audio = false;
+    updateQuickStatus();
   });
+  
+  function getMediaErrorMessage(code) {
+    const errors = {
+      1: 'MEDIA_ERR_ABORTED - Fetch aborted by user',
+      2: 'MEDIA_ERR_NETWORK - Network error',
+      3: 'MEDIA_ERR_DECODE - Decoding error',
+      4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - Format not supported'
+    };
+    return errors[code] || 'Unknown error';
+  }
 
   playBtn.addEventListener('click', () => {
     if (isPlaying) {
       audio.pause();
       playBtn.textContent = '▶';
       isPlaying = false;
-      audioStatus.textContent = 'Audio state: Paused';
-      audioStatus.className = 'status info';
     } else {
+      log('Attempting to play audio...', 'info');
       audio.play().then(() => {
         playBtn.textContent = '⏸';
         isPlaying = true;
+        log('Playback started successfully', 'success');
       }).catch(err => {
-        audioStatus.textContent = `Playback error: ${err.message}`;
-        audioStatus.className = 'status error';
-        console.error('Playback failed:', err);
+        log(`Playback failed: ${err.message}`, 'error');
       });
     }
   });
@@ -195,85 +447,326 @@
     volumeDisplay.textContent = e.target.value + '%';
   });
 
-  // Test stream URL
-  async function testStream() {
-    try {
-      const response = await fetch('https://stream.qwrt.online/radio/8000/radio.mp3', { 
-        method: 'HEAD',
-        mode: 'no-cors'
-      });
-      streamStatus.textContent = 'Stream: URL accessible (no-cors mode)';
-      streamStatus.className = 'status info';
-    } catch (error) {
-      streamStatus.textContent = `Stream: ${error.message}`;
-      streamStatus.className = 'status error';
+  // Network Tests
+  async function runNetworkTests() {
+    log('Running network tests...', 'info');
+    const container = document.getElementById('network-tests');
+    container.innerHTML = '<div class="status info">Testing network connectivity...</div>';
+    
+    const tests = [
+      { name: 'Stream URL (HEAD)', url: STREAM_URL, method: 'HEAD' },
+      { name: 'Stream URL (GET)', url: STREAM_URL, method: 'GET' },
+      { name: 'API Endpoint', url: API_URL, method: 'GET' }
+    ];
+    
+    let results = '';
+    
+    for (const test of tests) {
+      try {
+        const startTime = performance.now();
+        const response = await fetch(test.url, { 
+          method: test.method,
+          mode: 'cors'
+        });
+        const endTime = performance.now();
+        const duration = Math.round(endTime - startTime);
+        
+        const status = response.ok ? 'success' : 'warning';
+        const badge = response.ok ? 'ok' : 'warn';
+        
+        results += `
+          <div class="status ${status}">
+            <strong>${test.name} <span class="badge ${badge}">${response.status}</span></strong>
+            Response Time: ${duration}ms<br>
+            Content-Type: ${response.headers.get('content-type') || 'N/A'}
+            <small>URL: ${test.url}</small>
+          </div>
+        `;
+        
+        log(`${test.name}: ${response.status} (${duration}ms)`, status);
+        
+        if (test.name.includes('Stream')) {
+          testResults.stream = response.ok;
+        }
+        
+      } catch (error) {
+        results += `
+          <div class="status error">
+            <strong>${test.name} <span class="badge fail">FAIL</span></strong>
+            Error: ${error.message}
+            <small>This usually indicates CORS or network issues</small>
+          </div>
+        `;
+        log(`${test.name} failed: ${error.message}`, 'error');
+        
+        if (test.name.includes('Stream')) {
+          testResults.stream = false;
+        }
+      }
     }
+    
+    container.innerHTML = results;
+    updateQuickStatus();
   }
 
-  // Test the correct API endpoint
-  async function testAllEndpoints() {
-    apiStatus.innerHTML = '<strong>Testing API endpoint...</strong><br>';
+  // CORS Tests
+  async function runCORSTests() {
+    log('Testing CORS headers...', 'info');
+    const container = document.getElementById('cors-analysis');
+    container.innerHTML = '<div class="status info">Checking CORS configuration...</div>';
     
     try {
-      const response = await fetch('https://stream.qwrt.online/api/nowplaying/qwrt');
-      const data = await response.json();
-      
-      apiStatus.innerHTML = `✅ API Connected!<br><br>`;
-      apiStatus.innerHTML += `<strong>Station:</strong> ${data.station.name}<br>`;
-      apiStatus.innerHTML += `<strong>Now Playing:</strong><br>`;
-      apiStatus.innerHTML += `Title: ${data.now_playing.song.title}<br>`;
-      apiStatus.innerHTML += `Artist: ${data.now_playing.song.artist}<br>`;
-      apiStatus.innerHTML += `Text: ${data.now_playing.song.text}<br>`;
-      apiStatus.className = 'status success';
-      
-    } catch (error) {
-      apiStatus.innerHTML = `❌ API Error: ${error.message}<br>`;
-      apiStatus.innerHTML += `<br>CORS may still be blocking. Check that you:<br>`;
-      apiStatus.innerHTML += `1. Enabled CORS in AzuraCast admin<br>`;
-      apiStatus.innerHTML += `2. Restarted the Docker containers<br>`;
-      apiStatus.innerHTML += `3. Added your domain to allowed origins<br>`;
-      apiStatus.className = 'status error';
-    }
-  }
-
-  // Fetch now playing info from AzuraCast API
-  async function updateNowPlaying() {
-    try {
-      const response = await fetch('https://stream.qwrt.online/api/nowplaying/qwrt');
-      const data = await response.json();
-      
-      if (data && data.now_playing) {
-        const np = data.now_playing;
-        songTitle.textContent = np.song.text || np.song.title || 'Unknown Track';
-        artistName.textContent = np.song.artist || 'Unknown Artist';
-        
-        apiStatus.textContent = 'API: Connected ✅';
-        apiStatus.className = 'status success';
-        
-        // Use the album art if available (not the generic one)
-        if (np.song.art && !np.song.art.includes('generic_song')) {
-          albumArt.innerHTML = `<img src="${np.song.art}" alt="Album art" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
-        } else {
-          albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
+      const response = await fetch(API_URL, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin,
+          'Access-Control-Request-Method': 'GET',
+          'Access-Control-Request-Headers': 'Content-Type'
         }
-        return;
+      });
+      
+      const corsHeaders = {
+        'Access-Control-Allow-Origin': response.headers.get('access-control-allow-origin'),
+        'Access-Control-Allow-Methods': response.headers.get('access-control-allow-methods'),
+        'Access-Control-Allow-Headers': response.headers.get('access-control-allow-headers'),
+        'Access-Control-Allow-Credentials': response.headers.get('access-control-allow-credentials'),
+        'Access-Control-Max-Age': response.headers.get('access-control-max-age')
+      };
+      
+      let html = '<table class="header-table">';
+      let allGood = true;
+      
+      for (const [header, value] of Object.entries(corsHeaders)) {
+        const hasValue = value !== null;
+        const badge = hasValue ? 
+          (value === '*' || value.includes(window.location.origin) ? 'ok' : 'warn') : 
+          'fail';
+        
+        if (!hasValue && header === 'Access-Control-Allow-Origin') {
+          allGood = false;
+        }
+        
+        html += `
+          <tr>
+            <td>${header}</td>
+            <td><span class="badge ${badge}">${value || 'NOT SET'}</span></td>
+          </tr>
+        `;
       }
+      html += '</table>';
+      
+      const status = allGood ? 'success' : 'warning';
+      container.innerHTML = `
+        <div class="status ${status}">
+          <strong>CORS Headers Analysis</strong>
+          ${html}
+        </div>
+      `;
+      
+      testResults.cors = allGood;
+      log(`CORS test: ${allGood ? 'Passed' : 'Issues detected'}`, allGood ? 'success' : 'warn');
+      
     } catch (error) {
-      songTitle.textContent = 'Connection Error';
-      artistName.textContent = 'Check CORS settings';
-      apiStatus.textContent = `API Error: ${error.message}`;
-      apiStatus.className = 'status error';
-      console.error('API fetch error:', error);
+      container.innerHTML = `
+        <div class="status error">
+          <strong>CORS Test Failed</strong>
+          Error: ${error.message}
+          <small>Unable to perform OPTIONS preflight request</small>
+        </div>
+      `;
+      testResults.cors = false;
+      log(`CORS test failed: ${error.message}`, 'error');
+    }
+    
+    updateQuickStatus();
+  }
+
+  // API Test
+  async function testAPI() {
+    log('Fetching API data...', 'info');
+    const container = document.getElementById('api-response');
+    container.innerHTML = '<div class="status info">Fetching now playing data...</div>';
+    
+    try {
+      const startTime = performance.now();
+      const response = await fetch(API_URL);
+      const endTime = performance.now();
+      const duration = Math.round(endTime - startTime);
+      
+      const data = await response.json();
+      
+      container.innerHTML = `
+        <div class="status success">
+          <strong>API Connected <span class="badge ok">${response.status}</span></strong>
+          Response Time: ${duration}ms
+        </div>
+        <div class="metric">
+          <span class="metric-label">Station Name:</span>
+          <span class="metric-value">${data.station?.name || 'N/A'}</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Current Track:</span>
+          <span class="metric-value">${data.now_playing?.song?.text || 'N/A'}</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Artist:</span>
+          <span class="metric-value">${data.now_playing?.song?.artist || 'N/A'}</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Listeners:</span>
+          <span class="metric-value">${data.listeners?.current || 0}</span>
+        </div>
+      `;
+      
+      testResults.api = true;
+      log(`API fetch successful (${duration}ms)`, 'success');
+      updateNowPlayingDisplay(data);
+      
+    } catch (error) {
+      container.innerHTML = `
+        <div class="status error">
+          <strong>API Error <span class="badge fail">FAIL</span></strong>
+          ${error.message}
+          <small>Check CORS settings and network connectivity</small>
+        </div>
+      `;
+      testResults.api = false;
+      log(`API fetch failed: ${error.message}`, 'error');
+    }
+    
+    updateQuickStatus();
+    updateRequestDetails();
+  }
+
+  // Update now playing display
+  function updateNowPlayingDisplay(data) {
+    if (data && data.now_playing) {
+      const np = data.now_playing;
+      songTitle.textContent = np.song.text || np.song.title || 'Unknown Track';
+      artistName.textContent = np.song.artist || 'Unknown Artist';
+      
+      if (np.song.art && !np.song.art.includes('generic_song')) {
+        albumArt.innerHTML = `<img src="${np.song.art}" alt="Album art" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+      } else {
+        albumArt.innerHTML = '<span style="font-size:3rem;opacity:0.3">♪</span>';
+      }
     }
   }
 
-  // Initial checks
-  testStream();
-  testAllEndpoints();
-  updateNowPlaying();
+  // Update audio diagnostics
+  function updateAudioDiagnostics(message, status) {
+    const container = document.getElementById('audio-diagnostics');
+    const readyState = ['HAVE_NOTHING', 'HAVE_METADATA', 'HAVE_CURRENT_DATA', 'HAVE_FUTURE_DATA', 'HAVE_ENOUGH_DATA'];
+    const networkState = ['NETWORK_EMPTY', 'NETWORK_IDLE', 'NETWORK_LOADING', 'NETWORK_NO_SOURCE'];
+    
+    container.innerHTML = `
+      <div class="status ${status}">
+        <strong>Status: ${message}</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Ready State:</span>
+        <span class="metric-value">${readyState[audio.readyState]} (${audio.readyState})</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Network State:</span>
+        <span class="metric-value">${networkState[audio.networkState]} (${audio.networkState})</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Current Time:</span>
+        <span class="metric-value">${audio.currentTime.toFixed(2)}s</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Volume:</span>
+        <span class="metric-value">${(audio.volume * 100).toFixed(0)}%</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Stream URL:</span>
+        <span class="metric-value" style="font-size:0.75rem;word-break:break-all">${STREAM_URL}</span>
+      </div>
+    `;
+  }
+
+  // Update request details
+  async function updateRequestDetails() {
+    const container = document.getElementById('request-details');
+    
+    container.innerHTML = `
+      <div class="metric">
+        <span class="metric-label">Your Origin:</span>
+        <span class="metric-value">${window.location.origin}</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">User Agent:</span>
+        <span class="metric-value" style="font-size:0.75rem">${navigator.userAgent}</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Browser:</span>
+        <span class="metric-value">${navigator.vendor} ${navigator.appVersion.split(' ')[0]}</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Protocol:</span>
+        <span class="metric-value">${window.location.protocol}</span>
+      </div>
+    `;
+  }
+
+  // Update quick status
+  function updateQuickStatus() {
+    const container = document.getElementById('quick-status');
+    const checks = [
+      { name: 'Stream', status: testResults.stream },
+      { name: 'API', status: testResults.api },
+      { name: 'CORS', status: testResults.cors },
+      { name: 'Audio', status: testResults.audio }
+    ];
+    
+    let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">';
+    
+    for (const check of checks) {
+      const badge = check.status === null ? 'warn' : (check.status ? 'ok' : 'fail');
+      const statusText = check.status === null ? 'PENDING' : (check.status ? 'OK' : 'FAIL');
+      html += `
+        <div class="metric">
+          <span class="metric-label">${check.name}:</span>
+          <span class="badge ${badge}">${statusText}</span>
+        </div>
+      `;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // Auto-update now playing
+  async function autoUpdateNowPlaying() {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      updateNowPlayingDisplay(data);
+    } catch (error) {
+      // Silent fail for auto-updates
+    }
+  }
+
+  // Initialize
+  log('Debug page loaded', 'success');
+  updateQuickStatus();
+  updateAudioDiagnostics('Not started', 'info');
+  updateRequestDetails();
   
-  // Update now playing every 10 seconds
-  setInterval(updateNowPlaying, 10000);
+  // Run initial tests
+  setTimeout(() => {
+    runNetworkTests();
+    runCORSTests();
+    testAPI();
+  }, 500);
+  
+  // Auto-update every 10 seconds
+  setInterval(autoUpdateNowPlaying, 10000);
+  setInterval(() => updateAudioDiagnostics(
+    isPlaying ? 'Playing' : 'Paused',
+    isPlaying ? 'success' : 'info'
+  ), 1000);
 </script>
 
 </body>
