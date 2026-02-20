@@ -4,9 +4,9 @@
   max-width: 75%;
   width: 25%;
   padding: 16px;
-  background-color: #22252f;
+  background-color: #ffffff; /* light background */
   border-radius: 12px;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition: transform 0.2s ease; /* removed box-shadow transition */
 }
 
 .player-wrapper iframe {
@@ -16,16 +16,16 @@
   display: block;
 }
 
+/* removed glow */
 .player-wrapper:hover {
-  box-shadow: 0 0 20px #00ffff, 0 0 20px #00ffff inset;
-  transform: translateY(-2px);
+  transform: none; /* no lift, no glow */
 }
 </style>
 
 <div style="text-align: center;">
   <div class="player-wrapper">
     <iframe 
-      src="https://stream.qwrt.online/public/qwrt/embed"
+      src="https://stream.qwrt.online/public/qwrt/embed?theme=light"
       frameborder="0">
     </iframe>
   </div>
