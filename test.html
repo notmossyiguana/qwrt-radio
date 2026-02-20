@@ -1,12 +1,11 @@
 <style>
-/* for the audio player */
 .player-wrapper {
-  max-width: 75%;
-  width: 25%;
+  max-width: 600px;
+  width: 90%;
+  margin: 0 auto;
   padding: 16px;
-  background-color: #ffffff; /* light background */
+  background: #ffffff;
   border-radius: 12px;
-  transition: transform 0.2s ease; /* removed box-shadow transition */
 }
 
 .player-wrapper iframe {
@@ -14,8 +13,8 @@
   height: 110px;
   border: none;
   display: block;
+  background: #ffffff; /* forces white behind transparent areas */
 }
-
 /* removed glow */
 .player-wrapper:hover {
   transform: none; /* no lift, no glow */
