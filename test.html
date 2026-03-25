@@ -1,31 +1,46 @@
-<style>
-.player-wrapper {
-  max-width: 600px;
-  width: 90%;
-  margin: 0 auto;
-  padding: 16px;
-  background: #ffffff;
-  border-radius: 12px;
-}
-
-.player-wrapper iframe {
-  width: 100%;
-  height: 110px;
-  border: none;
-  display: block;
-  background: #ffffff; /* forces white behind transparent areas */
-}
-/* removed glow */
-.player-wrapper:hover {
-  transform: none; /* no lift, no glow */
-}
-</style>
-
-<div style="text-align: center;">
-  <div class="player-wrapper">
-    <iframe 
-      src="https://stream.qwrt.online/public/qwrt/embed?theme=light"
-      frameborder="0">
-    </iframe>
-  </div>
+<div id="radio-player">
+    <h3 id="now-playing">Loading station info...</h3>
+    <p id="current-artist"></p>
+    
+    <audio id="stream" src="https://stream.qwrt.online/listen/qwrt_radio/radio.mp3"></audio>
+    
+    <button onclick="togglePlay()" id="play-btn">Play</button>
+    <input type="range" id="volume" min="0" max="1" step="0.1" value="0.8" oninput="setVolume(this.value)">
 </div>
+
+<script>
+    const audio = document.getElementById('stream');
+    const playBtn = document.getElementById('play-btn');
+
+    // 1. Play/Pause Logic
+    function togglePlay() {
+        if (audio.paused) {
+            audio.play();
+            playBtn.innerText = "Pause";
+        } else {
+            audio.pause();
+            playBtn.innerText = "Play";
+        }
+    }
+
+    // 2. Volume Logic
+    function setVolume(val) {
+        audio.volume = val;
+    }
+
+    // 3. Metadata Logic (Fetch what's playing)
+    async function updateMetadata() {
+        try {
+            const response = await fetch('https://stream.qwrt.online/api/nowplaying/qwrt_radio');
+            const data = await response.json();
+            document.getElementById('now-playing').innerText = data.now_playing.song.title;
+            document.getElementById('current-artist').innerText = data.now_playing.song.artist;
+        } catch (error) {
+            console.error("Error fetching station data", error);
+        }
+    }
+
+    // Update song info every 15 seconds
+    updateMetadata();
+    setInterval(updateMetadata, 15000);
+</script>
