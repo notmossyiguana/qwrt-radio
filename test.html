@@ -46,7 +46,7 @@
             if (!response.ok) throw new Error('API Unavailable');
             
             const data = await response.json();
-            const currentSong = data.now_playing.song.text;
+            const currentSong = data.song.text;
 
             // Only update the text if it actually changed to prevent flickering
             if (songDisplay.innerText !== currentSong) {
