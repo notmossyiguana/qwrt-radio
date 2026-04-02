@@ -293,73 +293,56 @@
     #artist-name{font-size:1rem}
   }
 /* mobile SHITTT */
-.radio-player.mobile-player {
-    display: flex;
+.radio-player.mobile-version {
     flex-direction: row;
-    align-items: center;
     padding: 10px 15px;
-    gap: 12px;
-    height: 85px; /* Compact height */
+    height: 80px;
+    gap: 15px;
     border-radius: 20px;
-    background: #ffffff;
-    border: 2px solid #000;
 }
 
-.mobile-player #album-art {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-    position: relative;
+.mobile-art-btn {
+    width: 60px !important;
+    height: 60px !important;
     cursor: pointer;
-    border-radius: 12px;
-    overflow: hidden;
+    flex-shrink: 0;
 }
 
-/* blurry!! */
-.mobile-player #album-art:hover img, 
-.mobile-player #album-art:active img {
+.mobile-art-btn:hover img {
     filter: blur(4px) brightness(0.7);
 }
 
-.mobile-player .mobile-play-overlay {
+.play-overlay {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     color: white;
     font-size: 20px;
+    z-index: 5;
     opacity: 0;
     transition: opacity 0.2s;
     pointer-events: none;
 }
 
-.mobile-player #album-art:hover .mobile-play-overlay {
+.mobile-art-btn:hover .play-overlay {
     opacity: 1;
 }
 
-.mobile-player .track-info {
-    flex: 1;
-    gap: 0;
-}
-
-.mobile-player #song-title { font-size: 1rem !important; }
-.mobile-player #artist-name { font-size: 0.85rem !important; }
-
-/* volume */
-.mobile-player .mobile-controls {
+.mobile-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    margin-left: auto;
 }
 
-.mobile-player .mute-btn {
+#mute-btn {
     background: none;
     border: none;
     cursor: pointer;
+    color: var(--bw-foreground);
     padding: 0;
-    display: flex;
 }
 
-.mobile-player #mobile-volume {
-    width: 50px;
-    accent-color: #000;
+#volume {
+    width: 60px; /* Horizontal on mobile */
 }
