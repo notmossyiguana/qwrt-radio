@@ -255,8 +255,6 @@
 
       <div class="radio-player">
         <h3 class="section-title">
-          <span class="status-indicator" id="stream-status"></span>
-          Now Playing
         </h3>
         
         <div id="now-playing-info" style="margin-bottom:1.5rem">
@@ -303,7 +301,6 @@
   const songTitle = document.getElementById('song-title');
   const artistName = document.getElementById('artist-name');
   const albumArt = document.getElementById('album-art');
-  const streamStatus = document.getElementById('stream-status');
   
   // ── Correct endpoints ──────────────────────────────────────────────────────
   const STREAM_URL = "https://stream.qwrt.online/listen/qwrt_radio/radio.mp3";
@@ -346,12 +343,10 @@
       playBtn.innerHTML = '❚❚';
       playBtn.setAttribute('aria-label', 'Pause');
       playBtn.style.paddingLeft = '0';
-      streamStatus.className = 'status-indicator live';
     } else {
       playBtn.innerHTML = '▶';
       playBtn.setAttribute('aria-label', 'Play');
       playBtn.style.paddingLeft = '4px';
-      streamStatus.className = 'status-indicator offline';
     }
   }
 
@@ -424,7 +419,6 @@
 
   audio.addEventListener('playing', () => { updateUIState(true); retryCount = 0; });
   audio.addEventListener('waiting', () => {
-    streamStatus.className = 'status-indicator loading';
   });
   audio.addEventListener('error', () => {
     updateUIState(false);
