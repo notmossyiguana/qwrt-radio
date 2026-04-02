@@ -292,3 +292,74 @@
     #song-title{font-size:1.4rem}
     #artist-name{font-size:1rem}
   }
+/* mobile SHITTT */
+.radio-player.mobile-player {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 15px;
+    gap: 12px;
+    height: 85px; /* Compact height */
+    border-radius: 20px;
+    background: #ffffff;
+    border: 2px solid #000;
+}
+
+.mobile-player #album-art {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* blurry!! */
+.mobile-player #album-art:hover img, 
+.mobile-player #album-art:active img {
+    filter: blur(4px) brightness(0.7);
+}
+
+.mobile-player .mobile-play-overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.mobile-player #album-art:hover .mobile-play-overlay {
+    opacity: 1;
+}
+
+.mobile-player .track-info {
+    flex: 1;
+    gap: 0;
+}
+
+.mobile-player #song-title { font-size: 1rem !important; }
+.mobile-player #artist-name { font-size: 0.85rem !important; }
+
+/* volume */
+.mobile-player .mobile-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-player .mute-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+}
+
+.mobile-player #mobile-volume {
+    width: 50px;
+    accent-color: #000;
+}
