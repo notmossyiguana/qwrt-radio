@@ -281,15 +281,15 @@
       </div>
 
       <div class="track-info">
-        <div id="song-title">Offline or under maintenance</div>
-        <div id="artist-name">Check out the updates tab for more info.</div>
+        <div id="song-title">Loading Stream...</div>
+        <div id="artist-name">Tuning in</div>
       </div>
 
     </div>
   </main>
 
   <footer class="site-footer">
-    <div>© 2026 QWRT Media • <a href="/cdn-cgi/l/email-protection#59313c35353619282e2b2d7736373530373c"><span class="__cf_email__" data-cfemail="b3dbd6dfdfdcf3c2c4c1c79ddcdddfdaddd6">[email&#160;protected]</span></a></div>
+    <div>© 2026 QWRT Media • <a href="mailto:hello@qwrt.online">hello@qwrt.online</a></div>
   </footer>
 </div>
 
@@ -297,7 +297,7 @@
   <source src="https://stream.qwrt.online/listen/qwrt_radio/radio.mp3" type="audio/mpeg">
 </audio>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function () {
   const audio         = document.getElementById('radio-stream');
   const playBtn       = document.getElementById('play-btn');
@@ -412,5 +412,27 @@
   function releaseWakeLock() { if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }); } }
 
   playBtn.addEventListener('click', togglePlay);
+  
+  // Script was cut off here. Completed keydown event listener.
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && e.target.ta
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT') { 
+        e.preventDefault(); 
+        togglePlay(); 
+    }
+  });
+
+  // Ensure metadata updates when returning to the tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && isPlaying) fetchMetadata();
+  });
+
+  // Initialize volume from range input
+  audio.volume = parseInt(volumeInput.value) / 100;
+  
+  // Fetch initial metadata on page load
+  fetchMetadata();
+
+})();
+</script>
+</body>
+</html>
