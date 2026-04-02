@@ -154,75 +154,40 @@
   #play-btn:active{transform:scale(0.95)}
 
   /* volume */
-  .volume-wrap{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  #volume-display{
-    font-family: var(--font-caption);
-    font-weight: 700;
-    color: var(--muted);
-    font-size: 0.8rem;
-    line-height: 1;
-  }
-  .volume-track{
-    position: relative;
-    width: 28px;
-    height: 110px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: visible;
-  }
-  #volume{
-    -webkit-appearance: none;
-    appearance: none;
-    position: absolute;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-    width: 110px;
-    height: 28px;
-    background: transparent;
-    cursor: pointer;
-    margin: 0;
-    padding: 0;
-    left: 50%;
-    top: 50%;
-    margin-left: -55px;
-    margin-top: -14px;
-  }
-  #volume:focus{outline:none}
-  #volume::-webkit-slider-runnable-track{
-    height: 6px;
-    background: #e0e0e0;
-    border-radius: 6px;
-  }
-  #volume::-webkit-slider-thumb{
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--bw-foreground);
-    margin-top: -6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.22);
-    cursor: pointer;
-  }
-  #volume::-moz-range-track{
-    height: 6px;
-    background: #e0e0e0;
-    border-radius: 6px;
-  }
-  #volume::-moz-range-thumb{
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--bw-foreground);
-    border: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.22);
-    cursor: pointer;
-  }
+.volume-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+#volume-display {
+  font-family: var(--font-caption);
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.volume-track {
+  position: relative;
+  width: 30px;
+  height: 110px;
+  display: flex;
+  justify-content: center;
+}
+
+.radio-player:not(.mobile-version) #volume {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  width: 110px;
+  height: 30px;
+  background: transparent;
+  transform: rotate(-90deg);
+  top: 40px; 
+  margin: 0;
+  cursor: pointer;
+}
 
   /* navigation */
   .text-nav {
@@ -294,65 +259,65 @@
   }
 /* mobile SHITTT */
 .radio-player.mobile-version {
-    flex-direction: row;
-    padding: 10px 15px;
-    height: 85px; /* slightly taller for thumb clearance */
-    gap: 15px;
-    border-radius: 20px;
-    align-items: center;
-}
-
-/* FIX: This overrides the desktop vertical rotation for mobile */
-.mobile-version #volume {
-    position: static !important; /* Removes the absolute center positioning */
-    transform: none !important; /* Removes the -90deg rotation */
-    width: 80px !important;     /* Give it a set horizontal width */
-    margin: 0 !important;
-}
-
-.mobile-art-btn {
-    width: 60px !important;
-    height: 60px !important;
-    cursor: pointer;
-    flex-shrink: 0;
-    position: relative; /* ensure overlay stays centered */
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.mobile-art-btn:hover img {
-    filter: blur(4px) brightness(0.7);
-}
-
-.play-overlay {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 20px;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-}
-
-.mobile-art-btn:hover .play-overlay {
-    opacity: 1;
+  flex-direction: row !important;
+  padding: 10px 15px !important;
+  height: 85px !important;
+  gap: 15px !important;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .mobile-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
-#mute-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--bw-foreground);
-    padding: 0;
-    display: flex;
-    align-items: center;
+/* Fix for the wonky mobile slider position */
+.radio-player.mobile-version #volume {
+  -webkit-appearance: none;
+  appearance: none;
+  position: static !important; /* Resets the floating desktop position */
+  transform: none !important; /* Resets the rotation */
+  width: 70px !important;     /* Horizontal width */
+  height: 20px !important;
+  background: transparent;
+  margin: 0 !important;
+}
+
+/* --- SHARED SLIDER STYLING (The look) --- */
+#volume:focus { outline: none; }
+
+/* Track Look */
+#volume::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 6px;
+}
+#volume::-moz-range-track {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 6px;
+}
+
+/* Thumb Look */
+#volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bw-foreground);
+  margin-top: -5px; /* Centers thumb on track */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+#volume::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bw-foreground);
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
 }
