@@ -51,28 +51,7 @@
     letter-spacing:1px;
   }
   .logo .tag{color:var(--muted);font-size:0.9rem;font-weight:500}
-  nav.primary{display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap}
-  .nav-link{
-    display:inline-block;
-    padding:0.65rem 1.1rem;
-    border-radius:var(--radius);
-    border:var(--border-w) solid var(--bw-foreground);
-    background:var(--bw-background);
-    text-decoration:none;
-    color:var(--bw-foreground);
-    font-weight:700;
-    font-size:0.95rem;
-    transition:all 200ms ease;
-    box-shadow:0 2px 8px rgba(0,0,0,0.04);
-  }
-  .nav-link:focus{outline:3px solid rgba(11,11,11,0.2);outline-offset:2px}
-  .nav-link:hover{
-    transform:translateY(-3px);
-    box-shadow:0 8px 24px rgba(0,0,0,0.15);
-    background:var(--bw-foreground);
-    color:var(--bw-background);
-  }
-
+  
   /* Player card */
   .radio-player{
     border-radius:var(--radius);
@@ -130,6 +109,34 @@
     text-overflow:ellipsis;
   }
 
+  /* Progress Bar Styles */
+  .progress-container {
+    margin-top: 0.5rem;
+    display: none; /* Hidden by default until we have duration data */
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--bw-foreground);
+    width: 0%;
+    transition: width 1s linear; /* Smooth visual ticking */
+  }
+  .progress-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
   /* Controls column */
   .controls{
     display:flex;
@@ -158,7 +165,7 @@
   #play-btn:hover{transform:scale(1.06);box-shadow:0 6px 20px rgba(0,0,0,0.25)}
   #play-btn:active{transform:scale(0.95)}
 
-  /* Vertical volume — rotate-trick for perfect centering */
+  /* Vertical volume */
   .volume-wrap{
     display:flex;
     flex-direction:column;
@@ -184,7 +191,6 @@
     -webkit-appearance:none;
     appearance:none;
     position:absolute;
-    /* rotate horizontal → vertical, origin at dead-centre */
     transform:rotate(-90deg);
     transform-origin:50% 50%;
     width:110px;
@@ -283,6 +289,17 @@
       <div class="track-info">
         <div id="song-title">Loading Stream...</div>
         <div id="artist-name">Tuning in</div>
+        
+        <div class="progress-container" id="progress-container">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-time">
+            <span id="time-elapsed">0:00</span>
+            <span id="time-duration">0:00</span>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -306,14 +323,57 @@
   const songTitleEl   = document.getElementById('song-title');
   const artistNameEl  = document.getElementById('artist-name');
   const albumArtEl    = document.getElementById('album-art');
+  
+  // Progress bar elements
+  const progressContainer = document.getElementById('progress-container');
+  const progressFill      = document.getElementById('progress-fill');
+  const timeElapsedEl     = document.getElementById('time-elapsed');
+  const timeDurationEl    = document.getElementById('time-duration');
 
   const STREAM_URL = "https://stream.qwrt.online/listen/qwrt_radio/radio.mp3";
   const API_URL    = "https://stream.qwrt.online/api/nowplaying/qwrt_radio";
 
   let isPlaying = false, retryCount = 0, metadataInterval = null, wakeLock = null;
   let lastMetadata = { title:'', artist:'', art:'' };
+  
+  // Progress state
+  let currentElapsed = 0;
+  let currentDuration = 0;
+  let localProgressTimer = null;
 
   const DEFAULT_ART = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="%23f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="200" fill="%23cccccc" text-anchor="middle" dy=".3em">♪</text></svg>';
+
+  // Format seconds into M:SS
+  function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  // Update progress bar UI based on current variables
+  function updateProgressUI() {
+    if (currentDuration <= 0) {
+      progressContainer.style.display = 'none'; // Hide if no duration (e.g. live DJ set)
+      return;
+    }
+    progressContainer.style.display = 'flex';
+    const percent = Math.min((currentElapsed / currentDuration) * 100, 100);
+    progressFill.style.width = percent + '%';
+    timeElapsedEl.textContent = formatTime(currentElapsed);
+    timeDurationEl.textContent = formatTime(currentDuration);
+  }
+
+  // Locally tick the progress bar forward every second without waiting for API
+  function startLocalProgress() {
+    if (localProgressTimer) clearInterval(localProgressTimer);
+    localProgressTimer = setInterval(() => {
+      if (currentDuration > 0 && currentElapsed < currentDuration) {
+        currentElapsed++;
+        updateProgressUI();
+      }
+    }, 1000);
+  }
 
   /* Dynamic font sizing */
   function fitText(el, text, baseRem, minRem) {
@@ -393,12 +453,31 @@
       if (!res.ok) return;
       const data = await res.json();
       const np   = data.now_playing;
-      if (np && np.song) { updateMetadata(np.song.title, np.song.artist, np.song.art); setupMediaSession(); }
+      
+      if (np) { 
+        // Sync time with server
+        currentElapsed = np.elapsed || 0;
+        currentDuration = np.duration || 0;
+        updateProgressUI();
+        
+        if (np.song) {
+          updateMetadata(np.song.title, np.song.artist, np.song.art); 
+          setupMediaSession();
+        }
+      }
     } catch(e) { console.warn("Metadata fetch failed:", e); }
   }
 
-  function startMetadataService() { fetchMetadata(); if (!metadataInterval) metadataInterval = setInterval(fetchMetadata, 10000); }
-  function stopMetadataService()  { if (metadataInterval) { clearInterval(metadataInterval); metadataInterval = null; } }
+  function startMetadataService() { 
+    fetchMetadata(); 
+    if (!metadataInterval) metadataInterval = setInterval(fetchMetadata, 10000); 
+    startLocalProgress(); // Start the visual tick
+  }
+  
+  function stopMetadataService()  { 
+    if (metadataInterval) { clearInterval(metadataInterval); metadataInterval = null; } 
+    if (localProgressTimer) { clearInterval(localProgressTimer); localProgressTimer = null; }
+  }
 
   audio.addEventListener('playing', () => { updateUIState(true); retryCount = 0; });
   audio.addEventListener('error',   () => {
@@ -413,7 +492,6 @@
 
   playBtn.addEventListener('click', togglePlay);
   
-  // Script was cut off here. Completed keydown event listener.
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT') { 
         e.preventDefault(); 
@@ -421,16 +499,17 @@
     }
   });
 
-  // Ensure metadata updates when returning to the tab
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && isPlaying) fetchMetadata();
+    if (!document.hidden) {
+        fetchMetadata(); // resync timer when tab comes back into focus
+    }
   });
 
-  // Initialize volume from range input
   audio.volume = parseInt(volumeInput.value) / 100;
   
-  // Fetch initial metadata on page load
+  // Start fetching metadata right away so the UI looks good before hitting play
   fetchMetadata();
+  startLocalProgress();
 
 })();
 </script>
