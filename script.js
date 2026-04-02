@@ -185,17 +185,15 @@
     home: {
       heading: "Welcome to QWRT",
       sub: "Independent music, broadcasting 24/7.",
-      body: "This is the placeholder body text. Select a link from the navigation menu above to dynamically change this content without reloading the page. You can easily edit these text sections inside the script tag at the bottom of the HTML file."
+      body: "This is the placeholder body text."
     },
     about: {
       heading: "About the Station",
-      sub: "Our story and mission.",
       body: "QWRT Radio is dedicated to giving a platform to independent artists, DJs, and creators. We broadcast globally, ad-free, relying entirely on the support of our listeners and community."
     },
-    schedule: {
-      heading: "Live Shows & DJs",
-      sub: "Check out our weekly lineup.",
-      body: "From electronic beats on Friday nights to ambient Sunday mornings, our curated roster of resident DJs brings you the best underground sounds from around the world."
+     updates: {
+      heading: "Updates",
+      body: "Here we will post updates ig"
     }
   };
 
