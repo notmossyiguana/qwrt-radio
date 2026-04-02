@@ -296,9 +296,18 @@
 .radio-player.mobile-version {
     flex-direction: row;
     padding: 10px 15px;
-    height: 80px;
+    height: 85px; /* slightly taller for thumb clearance */
     gap: 15px;
     border-radius: 20px;
+    align-items: center;
+}
+
+/* FIX: This overrides the desktop vertical rotation for mobile */
+.mobile-version #volume {
+    position: static !important; /* Removes the absolute center positioning */
+    transform: none !important; /* Removes the -90deg rotation */
+    width: 80px !important;     /* Give it a set horizontal width */
+    margin: 0 !important;
 }
 
 .mobile-art-btn {
@@ -306,6 +315,9 @@
     height: 60px !important;
     cursor: pointer;
     flex-shrink: 0;
+    position: relative; /* ensure overlay stays centered */
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .mobile-art-btn:hover img {
@@ -341,8 +353,6 @@
     cursor: pointer;
     color: var(--bw-foreground);
     padding: 0;
-}
-
-#volume {
-    width: 60px; /* Horizontal on mobile */
+    display: flex;
+    align-items: center;
 }
