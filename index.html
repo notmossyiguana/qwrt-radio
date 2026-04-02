@@ -251,13 +251,7 @@
     </header>
 
     <main class="hero" role="main">
-      <article class="cover">
-        <div>
-          <h2 class="lead">Live Radio Stream</h2>
-          <p class="sub">Independent music, curated playlists, and live shows.</p>
-        </div>
-        <p>Tune into QWRT Radio for the best in independent and alternative music. Broadcasting 24/7 with carefully curated playlists and special live shows.</p>
-      </article>
+  
 
       <div class="radio-player">
         <h3 class="section-title">
@@ -271,8 +265,8 @@
               <span style="font-size:3rem;opacity:0.3;position:absolute;">♪</span>
             </div>
             <div style="flex:1;min-width:0">
-              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground);line-height:1.2;">QWRT Radio</div>
-              <div id="artist-name" style="color:var(--muted);font-size:1rem">Broadcasting live</div>
+              <div id="song-title" style="font-weight:700;font-size:1.3rem;margin-bottom:0.5rem;color:var(--bw-foreground);line-height:1.2;">Offline or under maintenance</div>
+              <div id="artist-name" style="color:var(--muted);font-size:1rem">Check out the updates tab for more info.</div>
             </div>
           </div>
         </div>
@@ -292,8 +286,6 @@
           <source src="https://stream.qwrt.online/listen/qwrt_radio/radio.mp3" type="audio/mpeg">
           Your browser does not support the audio element.
         </audio>
-        
-        <div id="connection-status" style="font-size:0.85rem;color:var(--muted);margin-top:1rem;min-height:1.2em;">Ready to tune in</div>
       </div>
     </main>
 
@@ -312,8 +304,7 @@
   const artistName = document.getElementById('artist-name');
   const albumArt = document.getElementById('album-art');
   const streamStatus = document.getElementById('stream-status');
-  const connectionStatus = document.getElementById('connection-status');
-
+  
   // ── Correct endpoints ──────────────────────────────────────────────────────
   const STREAM_URL = "https://stream.qwrt.online/listen/qwrt_radio/radio.mp3";
   const API_URL    = "https://stream.qwrt.online/api/nowplaying/qwrt_radio";
@@ -338,7 +329,6 @@
         acquireWakeLock();
         setupMediaSession();
       }).catch(() => {
-        connectionStatus.textContent = "Click Play again to start";
         isPlaying = false;
         updateUIState(false);
       });
@@ -357,13 +347,11 @@
       playBtn.setAttribute('aria-label', 'Pause');
       playBtn.style.paddingLeft = '0';
       streamStatus.className = 'status-indicator live';
-      connectionStatus.textContent = "Live Stream Connected";
     } else {
       playBtn.innerHTML = '▶';
       playBtn.setAttribute('aria-label', 'Play');
       playBtn.style.paddingLeft = '4px';
       streamStatus.className = 'status-indicator offline';
-      connectionStatus.textContent = "Stream Paused";
     }
   }
 
@@ -437,11 +425,9 @@
   audio.addEventListener('playing', () => { updateUIState(true); retryCount = 0; });
   audio.addEventListener('waiting', () => {
     streamStatus.className = 'status-indicator loading';
-    connectionStatus.textContent = "Buffering...";
   });
   audio.addEventListener('error', () => {
     updateUIState(false);
-    connectionStatus.textContent = "Stream connection lost. Retrying...";
     if (retryCount < 5) {
       retryCount++;
       setTimeout(() => { audio.load(); audio.play().catch(() => {}); }, 3000 * retryCount);
