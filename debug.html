@@ -269,7 +269,7 @@
     </div>
     
     <audio id="radio-stream" preload="none" crossorigin="anonymous">
-      <source src="https://stream.qwrt.online/radio/8000/radio.mp3" type="audio/mpeg">
+      <source src="https://stream.qwrt.online/listen/qwrt_radio/radio.mp3" type="audio/mpeg">
     </audio>
     
     <div class="debug-section">
@@ -333,8 +333,8 @@
   const artistName = document.getElementById('artist-name');
   const albumArt = document.getElementById('album-art');
   
-  const STREAM_URL = 'https://stream.qwrt.online/radio/8000/radio.mp3';
-  const API_URL = 'https://stream.qwrt.online/api/nowplaying/qwrt';
+  const STREAM_URL = 'https://stream.qwrt.online/listen/qwrt_radio/radio.mp3';
+  const API_URL = 'https://stream.qwrt.online/api/nowplaying/qwrt_radio';
   
   let isPlaying = false;
   let consoleLogLines = [];
