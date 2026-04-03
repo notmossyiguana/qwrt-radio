@@ -139,17 +139,25 @@
     audio.volume = e.target.value / 100;
     if (volumeDisplay) volumeDisplay.textContent = e.target.value + '%';
     // Unmute if user slides volume
-    if (audio.volume > 0) {
+    if (audio.volume > 0 && audio.muted) {
       audio.muted = false;
       updateMuteIcon();
+      if (audio.paused) {
+        audio.play().catch(() => {});
+      }
     }
   });
 
   // Mute Logic for Mobile
   if (muteBtn) {
     muteBtn.addEventListener('click', () => {
+      const wasMuted = audio.muted;
       audio.muted = !audio.muted;
       updateMuteIcon();
+      if (wasMuted && !audio.muted) {
+        // When unmuting, ensure playback is active
+        audio.play().catch(() => {});
+      }
     });
   }
 
