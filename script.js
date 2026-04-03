@@ -8,7 +8,7 @@
     playerContainer.classList.add('mobile-version');
     playerContainer.innerHTML = `
       <div id="album-art" class="mobile-art-btn">
-        <div class="play-overlay">▶</div>
+        <div class="play-overlay" style="opacity:0.5;">♪</div>
         <span class="placeholder-note" style="font-size:2rem;opacity:0.3;position:absolute;">♪</span>
       </div>
       
@@ -130,9 +130,7 @@
       playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
       playBtn.style.paddingLeft = playing ? '0' : '5px';
     }
-    // Update Mobile Art Overlay
-    const overlay = document.querySelector('.play-overlay');
-    if (overlay) overlay.textContent = icon;
+    // Do not update mobile overlay as mobile has permanent autoplay+mute behavior
   }
 
   volumeInput.addEventListener('input', (e) => {
@@ -247,17 +245,15 @@
   }
   function releaseWakeLock() { if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }); } }
 
-  // Assign togglePlay to whichever button is active
-  if (isMobile) {
-    albumArtEl.addEventListener('click', togglePlay);
-  } else {
+  // Assign togglePlay only on desktop. Mobile uses muted autoplay + mute/unmute toggle.
+  if (!isMobile && playBtn) {
     playBtn.addEventListener('click', togglePlay);
   }
   
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && e.target.tagName !== 'INPUT') { 
-        e.preventDefault(); 
-        togglePlay(); 
+    if (!isMobile && e.code === 'Space' && e.target.tagName !== 'INPUT') { 
+      e.preventDefault(); 
+      togglePlay(); 
     }
   });
 
