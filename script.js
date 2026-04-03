@@ -8,7 +8,7 @@
     playerContainer.classList.add('mobile-version');
     playerContainer.innerHTML = `
       <div id="album-art" class="mobile-art-btn">
-        <div class="play-overlay" style="opacity:0.5;">♪</div>
+        <div class="play-overlay" style="opacity:0.3;">♪</div>
         <span class="placeholder-note" style="font-size:2rem;opacity:0.3;position:absolute;">♪</span>
       </div>
       
@@ -18,8 +18,8 @@
       </div>
 
       <div class="mobile-controls">
-        <button id="mute-btn" aria-label="Mute">
-          <img id="mute-icon" src="unmuted.png" alt="Unmuted" width="22" height="22" />
+        <button id="mute-btn" aria-label="Unmute">
+          <img id="mute-icon" src="muted.png" alt="Muted" width="22" height="22" />
         </button>
         <input type="range" id="volume" min="0" max="100" value="80">
       </div>
@@ -67,10 +67,12 @@
   const DEFAULT_ART = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="%23f0f0f0"/><text x="50%" y="50%" font-family="Arial" font-size="200" fill="%23cccccc" text-anchor="middle" dy=".3em">♪</text></svg>';
 
   // --- 3. AUTO-PLAY BUT MUTED LOGIC ---
-  audio.muted = true; 
-  // Note: Standard browser policy allows auto-play ONLY if muted. 
-  // You can trigger audio.play() on window load if desired, 
-  // but it's safer to let the user hit the "Art" play button.
+  if (isMobile) {
+    audio.muted = true; // mobile autoplay always muted
+  } else {
+    audio.muted = false; // desktop should not mute by default
+  }
+  // Note: auto-play is permitted only if muted, so mobile starts muted.
 
   function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -174,8 +176,12 @@
     img.crossOrigin = "anonymous";
     img.src = artUrl || DEFAULT_ART;
     img.onload = () => {
-      // Clear placeholder but keep overlay on mobile
-      albumArtEl.innerHTML = isMobile ? '<div class="play-overlay">' + (audio.paused ? '▶' : '❚❚') + '</div>' : '';
+      // Clear placeholder; mobile now not a play/pause control, so keep neutral overlay for styling
+      if (isMobile) {
+        albumArtEl.innerHTML = '<div class="play-overlay" style="opacity:0.3;">♪</div>';
+      } else {
+        albumArtEl.innerHTML = '';
+      }
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
       img.className = 'loaded';
       albumArtEl.appendChild(img);
