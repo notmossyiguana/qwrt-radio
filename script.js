@@ -266,6 +266,23 @@
   });
 
   audio.volume = parseInt(volumeInput.value) / 100;
+
+  // Attempt mobile autoplay (muted autoplay is allowed in modern browsers)
+  if (isMobile) {
+    audio.src = STREAM_URL;
+    audio.load();
+    audio.play().then(() => {
+      isPlaying = true;
+      updateUIState(true);
+      startMetadataService();
+      acquireWakeLock();
+      setupMediaSession();
+    }).catch(err => {
+      // Autoplay may be blocked by some browsers; user interaction will still work.
+      console.warn('Autoplay blocked or unavailable:', err);
+    });
+  }
+
   fetchMetadata();
   startLocalProgress();
   

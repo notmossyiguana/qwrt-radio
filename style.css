@@ -356,12 +356,14 @@
   background: #000; /* Dark background helps the blur look cleaner */
 }
 
+/* scrapped, could be fun to add back in later with a more subtle effect
 .mobile-art-btn:hover img,
 .mobile-art-btn:active img {
   filter: blur(4px) brightness(0.6);
-  transform: scale(1.05); /* Optional: slight zoom for feedback */
+  transform: scale(1.05); 
   transition: all 0.3s ease;
 }
+*/
 
 .play-overlay {
   position: absolute;
@@ -373,7 +375,7 @@
   z-index: 5;
   opacity: 0.35;
   transition: opacity 0.2s ease;
-  pointer-events: none; /* Prevents the icon from blocking clicks */
+  pointer-events: none; 
   text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
@@ -385,7 +387,6 @@
 
 #volume:focus { outline: none; }
 
-/* Track Look */
 #volume::-webkit-slider-runnable-track {
   height: 6px;
   background: #e0e0e0;
@@ -397,7 +398,6 @@
   border-radius: 6px;
 }
 
-/* Thumb Look */
 #volume::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;
