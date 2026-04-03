@@ -1,0 +1,24 @@
+{
+  "home": {
+    "heading": "Welcome to QWRT",
+    "sub": "Independent music, broadcasting 24/7.",
+    "body": "This is the placeholder body text. "
+  },
+  "about": {
+    "heading": "About the Station",
+    "body": "QWRT Radio is dedicated to independent music and live broadcasting 24/7. We curate playlists featuring emerging artists and host special shows. Our mission is to provide a platform for underground talent while keeping the community engaged."
+  },
+  "updates": {
+    "heading": "Updates",
+    "body": "Here we will post updates about new shows, artist features, and station news. Stay tuned for the latest from QWRT Radio!"
+  },
+  "contact": {
+    "heading": "Get in Touch",
+    "sub": "We'd love to hear from ",
+    "body": "Email us at hello@qwrt.online for inquiries, feedback, or collaboration opportunities. Follow us on social media for the latest updates and behind-the-scenes content."
+  },
+  "schedule": {
+    "heading": "Show Schedule",
+    "body": "Our programming runs 24/7 with live shows on weekends. Check back here for the latest schedule updates and special broadcasts."
+  }
+}

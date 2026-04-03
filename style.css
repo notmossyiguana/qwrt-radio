@@ -211,7 +211,6 @@
   /* nav hover style */
   .nav-item:hover, .nav-item.active {
     color: var(--bw-foreground);
-    font-style: italic;
     text-decoration: underline;
     text-underline-offset: 6px;
   }

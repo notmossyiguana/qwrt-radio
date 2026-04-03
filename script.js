@@ -14,7 +14,7 @@
       
       <div class="track-info">
         <div id="song-title">Loading...</div>
-        <div id="artist-name">Tuning in</div>
+        <div id="artist-name">If the wait time is irregular, please try again later and email us at support@qwrt.online</div>
       </div>
 
       <div class="mobile-controls">
@@ -72,7 +72,6 @@
   } else {
     audio.muted = false; // desktop should not mute by default
   }
-  // Note: auto-play is permitted only if muted, so mobile starts muted.
 
   function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -148,7 +147,6 @@
     }
   });
 
-  // Mute Logic for Mobile
   if (muteBtn) {
     muteBtn.addEventListener('click', () => {
       const wasMuted = audio.muted;
@@ -161,15 +159,14 @@
     });
   }
 
-  // Ensure the icon matches initial state (audio starts muted)
   updateMuteIcon();
 
   function updateMetadata(title, artist, artUrl) {
     if (lastMetadata.title === title && lastMetadata.artist === artist && lastMetadata.art === artUrl) return;
     lastMetadata = { title, artist, art: artUrl };
 
-    const t = title  || 'QWRT Radio';
-    const a = artist || 'Broadcasting Live';
+    const t = title  || 'Fetching metadata...';
+    const a = artist || 'If the wait time is irregular, please try again later and email us at support@qwrt.online';
 
     songTitleEl.textContent  = t;
     artistNameEl.textContent = a;
@@ -184,7 +181,6 @@
     img.crossOrigin = "anonymous";
     img.src = artUrl || DEFAULT_ART;
     img.onload = () => {
-      // Clear placeholder; mobile now not a play/pause control, so keep neutral overlay for styling
       if (isMobile) {
         albumArtEl.innerHTML = '<div class="play-overlay" style="opacity:0.3;">♪</div>';
       } else {
@@ -195,8 +191,6 @@
       albumArtEl.appendChild(img);
     };
     img.onerror = () => { 
-        albumArtEl.innerHTML = isMobile ? '<div class="play-overlay">▶</div>' : '';
-        albumArtEl.innerHTML += '<span style="font-size:2rem;opacity:0.3;position:absolute;">♪</span>'; 
     };
   }
 
@@ -207,7 +201,7 @@
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: lastMetadata.title || 'QWRT Radio',
-        artist: lastMetadata.artist || 'Broadcasting Live',
+        artist: lastMetadata.artist || 'If the wait time is irregular, please try again later and email us at support@qwrt.online',
         album: 'QWRT Radio',
         artwork: [{ src: lastMetadata.art || DEFAULT_ART, sizes:'512x512', type:'image/jpeg' }]
       });
@@ -296,30 +290,62 @@
   fetchMetadata();
   startLocalProgress();
   
-  // (Your Nav/Content code remains at the bottom...)
-  const contentData = {
-    home: { heading: "Welcome to QWRT", sub: "Independent music, broadcasting 24/7.", body: "This is the placeholder body text." },
-    about: { heading: "About the Station", body: "QWRT Radio is dedicated..." },
-    updates: { heading: "Updates", body: "Here we will post updates ig" }
-  };
+  // Load pages from JSON and set up navigation
+  async function loadPages() {
+    let contentData = {};
+    try {
+      const response = await fetch('pages.json?v=' + Date.now());
+      if (!response.ok) throw new Error('Failed to load pages.json');
+      contentData = await response.json();
+    } catch (error) {
+      console.error('Error loading pages:', error);
+      // No fallback - if JSON fails, nav will be empty
+      return;
+    }
 
-  const navItems = document.querySelectorAll('.nav-item');
-  const dynHeading = document.getElementById('dyn-heading');
-  const dynSub = document.getElementById('dyn-sub');
-  const dynBody = document.getElementById('dyn-body');
+    const textNav = document.querySelector('.text-nav');
+    const dynHeading = document.getElementById('dyn-heading');
+    const dynSub = document.getElementById('dyn-sub');
+    const dynBody = document.getElementById('dyn-body');
 
-  navItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      navItems.forEach(nav => nav.classList.remove('active'));
-      item.classList.add('active');
-      const target = item.getAttribute('data-target');
-      if (contentData[target]) {
-        dynHeading.textContent = contentData[target].heading;
-        if (dynSub) dynSub.textContent = contentData[target].sub || "";
-        dynBody.textContent = contentData[target].body;
-      }
+    // Generate nav items dynamically
+    const pageKeys = Object.keys(contentData);
+    pageKeys.forEach((key, index) => {
+      const navItem = document.createElement('a');
+      navItem.href = '#';
+      navItem.className = 'nav-item';
+      navItem.setAttribute('data-target', key);
+      // Capitalize first letter for display
+      navItem.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+      if (index === 0) navItem.classList.add('active'); // First page active
+      textNav.appendChild(navItem);
     });
-  });
+
+    // Set up click handlers for nav items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+        const target = item.getAttribute('data-target');
+        if (contentData[target]) {
+          dynHeading.textContent = contentData[target].heading;
+          if (dynSub) dynSub.textContent = contentData[target].sub || "";
+          dynBody.textContent = contentData[target].body;
+        }
+      });
+    });
+
+    // Load the first page by default
+    if (pageKeys.length > 0) {
+      const firstKey = pageKeys[0];
+      dynHeading.textContent = contentData[firstKey].heading;
+      if (dynSub) dynSub.textContent = contentData[firstKey].sub || "";
+      dynBody.textContent = contentData[firstKey].body;
+    }
+  }
+
+  loadPages();
 
 })();
