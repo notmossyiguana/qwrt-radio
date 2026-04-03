@@ -260,11 +260,39 @@
 /* mobile SHITTT */
 .radio-player.mobile-version {
   flex-direction: row !important;
-  padding: 10px 15px !important;
-  height: 85px !important;
-  gap: 15px !important;
+  flex-wrap: wrap !important;
+  padding: 0.75rem !important;
+  min-height: auto !important;
+  height: auto !important;
+  gap: 0.75rem !important;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+}
+
+.radio-player.mobile-version #album-art {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+}
+
+.radio-player.mobile-version .track-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+.radio-player.mobile-version #song-title {
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-player.mobile-version #artist-name {
+  font-size: 0.8rem;
 }
 
 .mobile-controls {
@@ -274,16 +302,43 @@
   margin-left: auto;
 }
 
+.radio-player.mobile-version .progress-container {
+  width: 100%;
+  order: 3;
+  margin-top: 0.4rem;
+}
+
+.radio-player.mobile-version .progress-track {
+  width: 100%;
+}
+
 /* Fix for the wonky mobile slider position */
 .radio-player.mobile-version #volume {
   -webkit-appearance: none;
   appearance: none;
   position: static !important; /* Resets the floating desktop position */
   transform: none !important; /* Resets the rotation */
-  width: 70px !important;     /* Horizontal width */
-  height: 20px !important;
+  width: 100px !important;     /* Horizontal width */
+  max-width: 100%;
+  height: 18px !important;
   background: transparent;
   margin: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .radio-player.mobile-version #album-art {
+    width: 48px;
+    height: 48px;
+  }
+  .radio-player.mobile-version #song-title {
+    font-size: 0.95rem;
+  }
+  .radio-player.mobile-version #artist-name {
+    font-size: 0.75rem;
+  }
+  .mobile-controls {
+    gap: 6px;
+  }
 }
 
 /* --- SHARED SLIDER STYLING (The look) --- */
