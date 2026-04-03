@@ -19,11 +19,7 @@
 
       <div class="mobile-controls">
         <button id="mute-btn" aria-label="Mute">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-          </svg>
+          <img id="mute-icon" src="unmuted.png" alt="Unmuted" width="22" height="22" />
         </button>
         <input type="range" id="volume" min="0" max="100" value="80">
       </div>
@@ -46,9 +42,23 @@
 
   // Elements that only exist on Mobile
   const muteBtn         = document.getElementById('mute-btn');
+  const muteIcon        = document.getElementById('mute-icon');
 
   const STREAM_URL = "https://stream.qwrt.online/listen/qwrt_radio/radio.mp3";
   const API_URL    = "https://stream.qwrt.online/api/nowplaying/qwrt_radio";
+
+  function updateMuteIcon() {
+    if (!muteIcon) return;
+    if (audio.muted) {
+      muteIcon.src = 'muted.png';
+      muteIcon.alt = 'Muted';
+      muteBtn && muteBtn.setAttribute('aria-label', 'Unmute');
+    } else {
+      muteIcon.src = 'unmuted.png';
+      muteIcon.alt = 'Unmuted';
+      muteBtn && muteBtn.setAttribute('aria-label', 'Mute');
+    }
+  }
 
   let isPlaying = false, retryCount = 0, metadataInterval = null, wakeLock = null;
   let lastMetadata = { title:'', artist:'', art:'' };
@@ -130,8 +140,8 @@
     if (volumeDisplay) volumeDisplay.textContent = e.target.value + '%';
     // Unmute if user slides volume
     if (audio.volume > 0) {
-        audio.muted = false;
-        if (muteBtn) muteBtn.style.opacity = "1";
+      audio.muted = false;
+      updateMuteIcon();
     }
   });
 
@@ -139,9 +149,12 @@
   if (muteBtn) {
     muteBtn.addEventListener('click', () => {
       audio.muted = !audio.muted;
-      muteBtn.style.opacity = audio.muted ? "0.4" : "1";
+      updateMuteIcon();
     });
   }
+
+  // Ensure the icon matches initial state (audio starts muted)
+  updateMuteIcon();
 
   function updateMetadata(title, artist, artUrl) {
     if (lastMetadata.title === title && lastMetadata.artist === artist && lastMetadata.art === artUrl) return;
