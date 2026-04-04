@@ -239,16 +239,19 @@
     albumArtEl.classList.add('loading');
 
     currentArtImg.onload = () => {
-      albumArtEl.classList.remove('loading');
-      // Only insert the node if it isn't already a child (first load or after DOM reset)
-      if (!albumArtEl.contains(currentArtImg)) {
-        albumArtEl.appendChild(currentArtImg);
-      }
-    };
+     albumArtEl.classList.remove('loading');
+     // Clear placeholder elements before inserting real art
+     albumArtEl.innerHTML = '';
+     albumArtEl.appendChild(currentArtImg);
+};
 
     currentArtImg.onerror = () => {
       albumArtEl.classList.remove('loading');
-    };
+      albumArtEl.innerHTML = `
+     <div class="play-overlay" style="opacity:0.3;">♪</div>
+     <span class="placeholder-note" style="font-size:2rem;opacity:0.3;position:absolute;">♪</span>
+  `;
+};
 
     // Trigger new load
     currentArtImg.src = artUrl || DEFAULT_ART;
