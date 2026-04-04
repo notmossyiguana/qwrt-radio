@@ -27,7 +27,7 @@
 
       <div class="mobile-controls">
         <button id="mute-btn" aria-label="Unmute">
-          <img id="mute-icon" src="muted.png" alt="Muted" width="22" height="22" />
+          <img id="mute-icon" src="assets/muted.png" alt="Muted" width="22" height="22" />
         </button>
         <input type="range" id="volume" min="0" max="100" value="80" />
       </div>
@@ -84,11 +84,11 @@
   function updateMuteIcon() {
     if (!muteIcon) return;
     if (audio.muted) {
-      muteIcon.src = 'muted.png';
+      muteIcon.src = 'assets/muted.png';
       muteIcon.alt = 'Muted';
       muteBtn && muteBtn.setAttribute('aria-label', 'Unmute');
     } else {
-      muteIcon.src = 'unmuted.png';
+      muteIcon.src = 'assets/unmuted.png';
       muteIcon.alt = 'Unmuted';
       muteBtn && muteBtn.setAttribute('aria-label', 'Mute');
     }
@@ -227,8 +227,8 @@
       'and email us at support@qwrt.online'
     );
 
-    songTitleEl.textContent  = t;
-    artistNameEl.textContent = a;
+    songTitleEl.innerHTML  = t;
+    artistNameEl.innerHTML = a;
 
     const titleSize  = isMobile ? 1.2 : 2.1;
     const artistSize = isMobile ? 0.9 : 1.45;
@@ -405,7 +405,7 @@
       navItem.href      = '#';
       navItem.className = 'nav-item';
       navItem.setAttribute('data-target', key);
-      navItem.textContent = key.charAt(0).toLowerCase() + key.slice(1);
+      navItem.innerHTML = key.charAt(0).toLowerCase() + key.slice(1);
       if (index === 0) navItem.classList.add('active');
       textNav.appendChild(navItem);
     });
@@ -418,18 +418,18 @@
         item.classList.add('active');
         const target = item.getAttribute('data-target');
         if (contentData[target]) {
-          dynHeading.textContent = contentData[target].heading;
-          if (dynSub) dynSub.textContent = contentData[target].sub || '';
-          dynBody.textContent = contentData[target].body;
+          dynHeading.innerHTML = contentData[target].heading;
+          if (dynSub) dynSub.innerHTML = contentData[target].sub || '';
+          dynBody.innerHTML = contentData[target].body;
         }
       });
     });
 
     if (pageKeys.length > 0) {
       const first = pageKeys[0];
-      dynHeading.textContent = contentData[first].heading;
-      if (dynSub) dynSub.textContent = contentData[first].sub || '';
-      dynBody.textContent = contentData[first].body;
+      dynHeading.innerHTML = contentData[first].heading;
+      if (dynSub) dynSub.innerHTML = contentData[first].sub || '';
+      dynBody.innerHTML = contentData[first].body;
     }
   }
 

@@ -1,23 +1,14 @@
 {
-  "home": {
-    "heading": "Welcome to QWRT",
-    "sub": "Independent music, broadcasting 24/7.",
-    "body": "This is the placeholder body text. "
-  },
   "about": {
-    "heading": "About the Station",
-    "body": "QWRT Radio is dedicated to independent music and live broadcasting 24/7. We curate playlists featuring emerging artists and host special shows. Our mission is to provide a platform for underground talent while keeping the community engaged."
-  },
-  "updates": {
-    "heading": "Updates",
-    "body": "Here we will post updates about new shows, artist features, and station news. Stay tuned for the latest from QWRT Radio!"
+    "heading": "about the station",
+    "body": "QWRT Radio is an artist-first radio station built to spotlight independent musicians and help listeners discover new songs. Usually songs are being played from a shuffled playlist, featuring emerging artists. In some point we plan on having DJs featured as well.<br><br>If you are on mobile, the player will be muted by default so unmute it with the 🔇 button."
   },
   "contact": {
-    "heading": "Get in Touch",
-    "body": "Email us at hello@qwrt.online for inquiries, feedback, or collaboration opportunities. As we are currently in the scouting phase, we are eager to connect with artists, listeners, and potential partners. We look forward to hearing from you!"
+    "heading": "get in touch",
+    "body": "Email us at <a href='mailto:hello@qwrt.online'>hello@qwrt.online</a> for inquiries or collaboration opportunities. As we are currently in the scouting phase, we are looking to connect with artists, DJs, and potential partners.<br><br>Please also let us know if there are any functional errors with the site or if you have any feedbackw."
   },
-  "schedule": {
-    "heading": "Show Schedule",
-    "body": "Our programming runs 24/7 with live shows on weekends. Check back here for the latest schedule updates and special broadcasts."
+  "updates": {
+    "heading": "updates",
+    "body": "Here we will post updates about our schedule, new artist features, and maintenance. Stay tuned!"
   }
 }
